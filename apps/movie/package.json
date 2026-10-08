@@ -1,0 +1,16 @@
+{
+  "name": "@nexo/movie",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config ../../vite.config.ts --port 4102 --strictPort",
+    "build": "vite build --config ../../vite.config.ts",
+    "preview": "vite preview --config ../../vite.config.ts --port 4102 --strictPort"
+  },
+  "dependencies": {
+    "@nexo/ui": "*",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}
