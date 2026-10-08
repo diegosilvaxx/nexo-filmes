@@ -1,0 +1,27 @@
+# Dependências e builds
+node_modules/
+dist/
+build/
+storybook-static/
+
+# Variáveis locais e segredos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Relatórios de testes
+coverage/
+playwright-report/
+test-results/
+
+# Arquivos temporários
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
