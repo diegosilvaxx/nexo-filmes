@@ -20,7 +20,7 @@ export function Standalone() {
           path="/favoritos"
           element={
             <IsolatedArea>
-              <App />
+              <App standalone />
             </IsolatedArea>
           }
         />

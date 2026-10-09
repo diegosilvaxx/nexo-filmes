@@ -6,6 +6,17 @@ export { SiteLayout } from './SiteLayout';
 export { RecoveryBoundary, IsolatedArea, LoadingState } from './RecoveryBoundary';
 export { NotFound } from './NotFound';
 export { NavigationLink, FavoriteCount, TextLink } from './application.styles';
+export { MovieCard } from './MovieCard';
+export { RequestError } from './RequestError';
+export {
+  Button,
+  MovieGrid,
+  Notice,
+  SectionHeader,
+  PageHeading,
+  Intro,
+  ResultsInfo,
+} from './movie.styles';
 
 interface ApplicationPageProps {
   title: string;

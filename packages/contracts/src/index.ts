@@ -13,3 +13,4 @@ export interface NavigationItem {
   label: string;
 }
 export * from './movies';
+export * from './user-data';

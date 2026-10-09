@@ -21,6 +21,7 @@
     "allowImportingTsExtensions": true,
     "types": ["node", "vite/client", "@testing-library/jest-dom"],
     "paths": {
+      "@nexo/user-data": ["./packages/user-data/src/index.ts"],
       "@nexo/movies": ["./packages/movies/src/index.ts"],
       "@nexo/tmdb": ["./packages/tmdb/src/index.ts"],
       "@nexo/ui": ["./packages/ui/src/index.tsx"],

@@ -11,7 +11,7 @@ export function Standalone() {
           path="/filmes"
           element={
             <IsolatedArea>
-              <App />
+              <App standalone />
             </IsolatedArea>
           }
         />

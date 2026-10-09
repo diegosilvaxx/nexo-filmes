@@ -39,6 +39,15 @@ export function createAppConfig(application: ApplicationName) {
           'react-router-dom': { singleton: true, requiredVersion: '7.18.4' },
           'react-router': { singleton: true, requiredVersion: '7.18.4' },
           'styled-components': { singleton: true, requiredVersion: '6.5.3' },
+          '@nexo/user-data': {
+            singleton: true,
+            version: '0.1.0',
+            requiredVersion: '0.1.0',
+            import: resolve(repositoryRoot, 'packages/user-data/src/index.ts').replaceAll(
+              '\\',
+              '/',
+            ),
+          },
         },
       }),
       ...(application === 'shell' ? [runtimeConfigPlugin(repositoryRoot, mode)] : []),

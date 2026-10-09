@@ -44,6 +44,7 @@ packages/
   http/        # Cliente HTTP com Axios
   movies/      # Cliente do BFF para as telas
   tmdb/        # Adapter da TMDB, exclusivo do servidor
+  user-data/   # Repositório local e estado compartilhado de favoritos
   ui/          # Componentes e estilos comuns
 scripts/       # Execução e verificação de arquitetura
 tooling/       # Configuração de Vite e remotes
@@ -75,9 +76,19 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 
 O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
-O BFF disponibiliza gêneros, catálogo, busca e detalhes normalizados da TMDB. As páginas ainda apresentam telas iniciais e o contador permanece em zero; a conexão dos componentes com esses dados, os favoritos, as avaliações e as métricas ainda não estão implementados.
+O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. A página de favoritos permite listar e remover filmes, com contador sincronizado no cabeçalho. Detalhes, avaliações pessoais e métricas ainda apresentam telas iniciais.
 
-Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP e falhas de serviço. `npm run test:coverage` exige pelo menos 70% de linhas nos pacotes de integração `tmdb` e `movies`. Os testes não leem o token local.
+Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data` e na normalização da consulta do catálogo. Os testes não leem o token local.
+
+## Catálogo e favoritos
+
+Exemplos de URLs compartilháveis: `/filmes?page=2&genreId=18&sort=rating` e `/filmes?search=Matrix`. Gênero e ordenação reiniciam a paginação. A busca usa relevância; limpe o título para habilitar gênero e ordenação. Valores inválidos da URL são normalizados, e voltar ou avançar no navegador recupera a consulta.
+
+`@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
+
+Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; em modo de teste ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
+
+Favoritos persistem no navegador, por origem, e mudanças em outras abas da mesma origem atualizam o estado. Aplicações independentes em portas distintas têm armazenamento separado. Seus links para outras aplicações usam `VITE_PORTAL_URL`, com padrão `http://127.0.0.1:4100`. Dados corrompidos ou armazenamento indisponível apresentam erro sem sobrescrever o conteúdo existente.
 
 ## URLs dos remotes
 
