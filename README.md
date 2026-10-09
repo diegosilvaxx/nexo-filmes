@@ -76,19 +76,31 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 
 O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
-O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. A página de favoritos permite listar e remover filmes, com contador sincronizado no cabeçalho. Detalhes, avaliações pessoais e métricas ainda apresentam telas iniciais.
+O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. O detalhe exibe sinopse, duração, direção e elenco, permite favoritar e criar, editar ou excluir uma avaliação. A página de favoritos mostra a nota pessoal e permite remover filmes, com contador sincronizado no cabeçalho. O painel ainda apresenta uma tela inicial.
 
-Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data` e na normalização da consulta do catálogo. Os testes não leem o token local.
+Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos e avaliações. Os testes de formulário verificam mensagens por campo, foco no primeiro erro, preservação do rascunho, substituição e exclusão. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data`, na normalização da consulta do catálogo e no formulário de avaliação. Os testes não leem o token local.
 
 ## Catálogo e favoritos
 
 Exemplos de URLs compartilháveis: `/filmes?page=2&genreId=18&sort=rating` e `/filmes?search=Matrix`. Gênero e ordenação reiniciam a paginação. A busca usa relevância; limpe o título para habilitar gênero e ordenação. Valores inválidos da URL são normalizados, e voltar ou avançar no navegador recupera a consulta.
 
-`@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
+`@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas de favoritos e avaliações. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` identifica o recurso e notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
 
-Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; em modo de teste ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
+Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções de favoritos, salvamentos e exclusões de avaliações. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; em modo de teste ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
 
 Favoritos persistem no navegador, por origem, e mudanças em outras abas da mesma origem atualizam o estado. Aplicações independentes em portas distintas têm armazenamento separado. Seus links para outras aplicações usam `VITE_PORTAL_URL`, com padrão `http://127.0.0.1:4100`. Dados corrompidos ou armazenamento indisponível apresentam erro sem sobrescrever o conteúdo existente.
+
+## Detalhes e avaliações
+
+`/filme/:id` carrega os dados normalizados pelo BFF. IDs inválidos ou filmes inexistentes apresentam a página 404. Requisições são canceladas ao mudar de filme; respostas antigas não substituem a tela atual. Há estados para dados ausentes, carregamento e erro com nova tentativa. No remote independente, `/` abre `/filme/550`.
+
+A avaliação é única por filme, com nota obrigatória de 0,5 a 10 em passos de 0,5 e comentário opcional de até 500 caracteres. Os campos preservam os valores digitados, sem correção automática da nota ou bloqueio de caracteres no comentário. Ao salvar, o schema Zod valida os campos e impede a gravação de dados inválidos. Cada campo inválido recebe sua mensagem e descrição acessível, o primeiro recebe foco e os valores permanecem no formulário.
+
+Acessar `/filme/13` permite consultar o filme normalmente. Com a simulação de falhas ativada, o erro acontece ao tentar gravar um favorito ou uma avaliação, após o atraso do repositório.
+
+Salvar novamente substitui a avaliação anterior. A nota pessoal nos favoritos muda imediatamente e volta ao valor anterior se a gravação falhar; o formulário mantém o rascunho para outra tentativa. Durante a escrita, os controles ficam desativados. A exclusão remove somente a avaliação, preserva o favorito e permite avaliar novamente. Uma atualização vinda de outra aba não sobrescreve um rascunho em edição.
+
+Favoritos e avaliações usam registros versionados separados, `nexo-filmes:favorites:v1` e `nexo-filmes:reviews:v1`. Uma falha na leitura de avaliações não impede a lista ou o contador de favoritos. Remover um favorito preserva sua avaliação.
 
 ## URLs dos remotes
 

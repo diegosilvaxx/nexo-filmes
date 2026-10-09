@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { MovieQuery } from '@nexo/contracts';
-import { createMoviesApi } from '@nexo/movies';
+import { createMoviesApi, useResource } from '@nexo/movies';
 import { useFavorites } from '@nexo/user-data';
 import {
   Button,
@@ -16,7 +16,6 @@ import {
   SectionHeader,
 } from '@nexo/ui';
 import { readCatalogQuery, writeCatalogQuery } from './query';
-import { useResource } from './useResource';
 import { Field, FilterHelp, Filters, Pagination } from './catalog.styles';
 
 const api = createMoviesApi();

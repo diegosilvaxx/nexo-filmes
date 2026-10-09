@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { MovieSummary } from '@nexo/contracts';
 import {
-  FavoriteButton,
   MovieArticle,
   MovieGenres,
   MovieLink,
@@ -10,6 +9,7 @@ import {
   Poster,
   Rating,
 } from './movie.styles';
+import { FavoriteToggle } from './FavoriteToggle';
 
 interface MovieCardProps {
   movie: MovieSummary;
@@ -18,6 +18,8 @@ interface MovieCardProps {
   disabled?: boolean;
   onToggle: () => void;
   detailsPath?: string;
+  personalRating?: number | null | undefined;
+  ratingPending?: boolean;
 }
 export function MovieCard({
   movie,
@@ -26,6 +28,8 @@ export function MovieCard({
   disabled = false,
   onToggle,
   detailsPath,
+  personalRating,
+  ratingPending = false,
 }: MovieCardProps) {
   const [failedPoster, setFailedPoster] = useState(false);
   return (
@@ -63,30 +67,21 @@ export function MovieCard({
       <MovieGenres>
         {movie.genres.map((genre) => genre.name).join(' · ') || 'Gênero não informado'}
       </MovieGenres>
-      <FavoriteButton
-        type="button"
-        aria-pressed={favorite}
-        aria-busy={pending}
-        aria-label={`${favorite ? 'Remover' : 'Adicionar'} ${movie.title} ${favorite ? 'dos' : 'aos'} favoritos`}
-        disabled={disabled || pending}
-        onClick={onToggle}
-      >
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill={favorite ? 'currentColor' : 'none'}
-          aria-hidden="true"
-        >
-          <path
-            d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {pending ? 'Salvando…' : favorite ? 'Favoritado' : 'Favoritar'}
-      </FavoriteButton>
+      {personalRating !== undefined && (
+        <MovieGenres aria-busy={ratingPending}>
+          {personalRating === null
+            ? 'Sem avaliação'
+            : `Sua nota: ${personalRating.toFixed(1).replace('.', ',')}`}
+          {ratingPending && <span> · Salvando…</span>}
+        </MovieGenres>
+      )}
+      <FavoriteToggle
+        title={movie.title}
+        favorite={favorite}
+        pending={pending}
+        disabled={disabled}
+        onToggle={onToggle}
+      />
     </MovieArticle>
   );
 }

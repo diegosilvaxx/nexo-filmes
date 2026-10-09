@@ -1,6 +1,12 @@
 import {
   FAVORITES_STORAGE_KEY,
   favoritesSchema,
+  REVIEWS_STORAGE_KEY,
+  movieIdSchema,
+  reviewInputSchema,
+  reviewsSchema,
+  type Review,
+  type ReviewInput,
   movieSummarySchema,
   type MovieSummary,
 } from '@nexo/contracts';
@@ -13,6 +19,11 @@ export interface SimulationConfig {
 export interface FavoritesRepository {
   listFavorites(): Promise<MovieSummary[]>;
   setFavorite(movie: MovieSummary, favorite: boolean): Promise<void>;
+}
+export interface ReviewsRepository {
+  listReviews(): Promise<Review[]>;
+  saveReview(movieId: number, input: ReviewInput): Promise<Review>;
+  deleteReview(movieId: number): Promise<void>;
 }
 type StorageAccess = Pick<Storage, 'getItem' | 'setItem'>;
 const defaults: SimulationConfig = { delayMinMs: 300, delayMaxMs: 1500, failWrites: true };
@@ -40,7 +51,7 @@ export function createUserRepository(
     simulation?: SimulationConfig;
     random?: () => number;
   } = {},
-): FavoritesRepository {
+): FavoritesRepository & ReviewsRepository {
   const storage = options.storage ?? (() => window.localStorage);
   const config = options.simulation ?? defaults;
   const random = options.random ?? Math.random;
@@ -56,6 +67,17 @@ export function createUserRepository(
     const data = favoritesSchema.parse(JSON.parse(value));
     return [...new Map(data.favorites.map((movie) => [movie.id, movie])).values()];
   }
+  function readReviews() {
+    const value = storage().getItem(REVIEWS_STORAGE_KEY);
+    if (!value) return [];
+    const data = reviewsSchema.parse(JSON.parse(value));
+    return [...new Map(data.reviews.map((review) => [review.movieId, review])).values()];
+  }
+  function writableId(input: number) {
+    const id = movieIdSchema.parse(input);
+    if (config.failWrites && String(id).endsWith('13')) throw new Error('Falha de gravação.');
+    return id;
+  }
   return {
     async listFavorites() {
       await wait();
@@ -69,8 +91,7 @@ export function createUserRepository(
       await wait();
       try {
         const movie = movieSummarySchema.parse(input);
-        if (config.failWrites && String(movie.id).endsWith('13'))
-          throw new Error('Falha de gravação.');
+        writableId(movie.id);
         const favorites = new Map(read().map((item) => [item.id, item]));
         if (favorite) favorites.set(movie.id, movie);
         else favorites.delete(movie.id);
@@ -80,6 +101,40 @@ export function createUserRepository(
         );
       } catch {
         throw new Error('Não foi possível salvar os favoritos. A alteração foi desfeita.');
+      }
+    },
+    async listReviews() {
+      await wait();
+      try {
+        return readReviews();
+      } catch {
+        throw new Error('Não foi possível carregar as avaliações. Tente novamente.');
+      }
+    },
+    async saveReview(inputId, input) {
+      await wait();
+      try {
+        const movieId = writableId(inputId);
+        const review = { movieId, ...reviewInputSchema.parse(input) };
+        const reviews = new Map(readReviews().map((item) => [item.movieId, item]));
+        reviews.set(movieId, review);
+        storage().setItem(
+          REVIEWS_STORAGE_KEY,
+          JSON.stringify({ version: 1, reviews: [...reviews.values()] }),
+        );
+        return review;
+      } catch {
+        throw new Error('Não foi possível salvar a avaliação. Seus dados foram mantidos.');
+      }
+    },
+    async deleteReview(inputId) {
+      await wait();
+      try {
+        const movieId = writableId(inputId);
+        const reviews = readReviews().filter((item) => item.movieId !== movieId);
+        storage().setItem(REVIEWS_STORAGE_KEY, JSON.stringify({ version: 1, reviews }));
+      } catch {
+        throw new Error('Não foi possível excluir a avaliação. Tente novamente.');
       }
     },
   };

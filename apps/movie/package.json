@@ -9,6 +9,8 @@
     "preview": "vite preview --port 4102 --strictPort"
   },
   "dependencies": {
+    "@nexo/movies": "*",
+    "@nexo/contracts": "*",
     "@nexo/ui": "*",
     "react": "19.3.0",
     "react-dom": "19.3.0",

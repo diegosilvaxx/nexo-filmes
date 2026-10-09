@@ -6,6 +6,9 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "peerDependencies": {
+    "react": "19.3.0"
+  },
   "dependencies": {
     "@nexo/contracts": "0.1.0",
     "@nexo/http": "0.1.0",

@@ -7,6 +7,7 @@ export { RecoveryBoundary, IsolatedArea, LoadingState } from './RecoveryBoundary
 export { NotFound } from './NotFound';
 export { NavigationLink, FavoriteCount, TextLink } from './application.styles';
 export { MovieCard } from './MovieCard';
+export { FavoriteToggle } from './FavoriteToggle';
 export { RequestError } from './RequestError';
 export {
   Button,

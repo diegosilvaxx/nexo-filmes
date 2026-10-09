@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useFavorites } from '@nexo/user-data';
+import { useFavorites, useReviews } from '@nexo/user-data';
 import {
   Intro,
   LoadingState,
@@ -15,6 +15,8 @@ import {
 
 export function Favorites({ standalone = false }: { standalone?: boolean }) {
   const favorites = useFavorites();
+  const reviews = useReviews();
+  const ratings = new Map(reviews.reviews.map((review) => [review.movieId, review.rating]));
   const portal = import.meta.env.VITE_PORTAL_URL || 'http://127.0.0.1:4100';
   useEffect(() => {
     document.title = 'Favoritos · Nexo Filmes';
@@ -43,6 +45,15 @@ export function Favorites({ standalone = false }: { standalone?: boolean }) {
             {favorites.favorites.length}{' '}
             {favorites.favorites.length === 1 ? 'filme salvo' : 'filmes salvos'}
           </ResultsInfo>
+          {(reviews.status === 'loading' || reviews.status === 'idle') && (
+            <LoadingState label="Carregando suas notas…" />
+          )}
+          {(reviews.status === 'error' || reviews.error) && (
+            <RequestError
+              message={reviews.error ?? 'Não foi possível carregar suas notas.'}
+              onRetry={() => void reviews.retry()}
+            />
+          )}
           {favorites.favorites.length ? (
             <MovieGrid>
               {favorites.favorites.map((movie) => (
@@ -52,6 +63,10 @@ export function Favorites({ standalone = false }: { standalone?: boolean }) {
                   favorite
                   pending={favorites.pendingIds.includes(movie.id)}
                   onToggle={() => void favorites.toggleFavorite(movie)}
+                  personalRating={
+                    reviews.status === 'ready' ? (ratings.get(movie.id) ?? null) : undefined
+                  }
+                  ratingPending={reviews.pendingIds.includes(movie.id)}
                   {...(standalone ? { detailsPath: `${portal}/filme/${movie.id}` } : {})}
                 />
               ))}

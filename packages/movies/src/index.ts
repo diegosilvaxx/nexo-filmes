@@ -8,27 +8,12 @@ import {
   movieIdSchema,
   moviePageSchema,
   movieQuerySchema,
-  type ApiErrorCode,
   type MovieQuery,
 } from '@nexo/contracts';
 
-export class MoviesApiError extends Error {
-  readonly code: ApiErrorCode | 'NETWORK_ERROR';
-  readonly status: number;
-  readonly retryAfterSeconds: number | undefined;
-  constructor(
-    code: ApiErrorCode | 'NETWORK_ERROR',
-    status: number,
-    message: string,
-    retryAfterSeconds?: number,
-  ) {
-    super(message);
-    this.name = 'MoviesApiError';
-    this.code = code;
-    this.status = status;
-    this.retryAfterSeconds = retryAfterSeconds;
-  }
-}
+import { MoviesApiError } from './errors';
+export { MoviesApiError } from './errors';
+export { useResource } from './useResource';
 
 export function createMoviesApi(client: AxiosInstance = createHttpClient()) {
   async function get<T>(

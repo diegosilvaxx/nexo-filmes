@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { MoviesApiError } from '@nexo/movies';
+import { MoviesApiError } from './errors';
 type Result<T> =
   | { key: string; status: 'ready'; data: T }
-  | { key: string; status: 'error'; message: string; retryAt: number | undefined };
+  | { key: string; status: 'error'; code: string; message: string; retryAt: number | undefined };
 export function useResource<T>(
   key: string,
   load: (signal: AbortSignal) => Promise<T>,
@@ -23,6 +23,7 @@ export function useResource<T>(
         setResult({
           key: requestKey,
           status: 'error',
+          code: error instanceof MoviesApiError ? error.code : 'NETWORK_ERROR',
           message:
             error instanceof MoviesApiError
               ? error.message

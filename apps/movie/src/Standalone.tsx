@@ -4,9 +4,9 @@ import { App } from './App';
 
 export function Standalone() {
   return (
-    <SiteLayout homePath="/filme/1" navigation={[]}>
+    <SiteLayout homePath="/filme/550" navigation={[]}>
       <Routes>
-        <Route path="/" element={<Navigate to="/filme/1" replace />} />
+        <Route path="/" element={<Navigate to="/filme/550" replace />} />
         <Route
           path="/filme/:id"
           element={
@@ -15,7 +15,7 @@ export function Standalone() {
             </IsolatedArea>
           }
         />
-        <Route path="*" element={<NotFound homePath="/filme/1" />} />
+        <Route path="*" element={<NotFound homePath="/filme/550" />} />
       </Routes>
     </SiteLayout>
   );
