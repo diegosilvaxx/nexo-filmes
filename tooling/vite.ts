@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { runtimeConfigPlugin } from './runtime-config.ts';
 
 export type ApplicationName = 'shell' | 'catalog' | 'movie' | 'area';
@@ -46,6 +46,10 @@ export function createAppConfig(application: ApplicationName) {
     resolve: {
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom', 'styled-components'],
       alias: [
+        {
+          find: /^@nexo\/movies$/,
+          replacement: resolve(repositoryRoot, 'packages/movies/src/index.ts'),
+        },
         { find: /^@nexo\/ui$/, replacement: resolve(repositoryRoot, 'packages/ui/src/index.tsx') },
         {
           find: /^@nexo\/http$/,
@@ -64,8 +68,25 @@ export function createAppConfig(application: ApplicationName) {
       origin: `http://127.0.0.1:${ports[application]}`,
       cors: true,
       fs: { allow: [repositoryRoot] },
+      proxy: {
+        '/api': {
+          target: loadEnv(mode, repositoryRoot, 'NEXO_').NEXO_BFF_URL || 'http://127.0.0.1:4200',
+          changeOrigin: true,
+        },
+      },
     },
-    preview: { host: '127.0.0.1', port: ports[application], strictPort: true, cors: true },
+    preview: {
+      host: '127.0.0.1',
+      port: ports[application],
+      strictPort: true,
+      cors: true,
+      proxy: {
+        '/api': {
+          target: loadEnv(mode, repositoryRoot, 'NEXO_').NEXO_BFF_URL || 'http://127.0.0.1:4200',
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       target: 'es2022',
       outDir: resolve(repositoryRoot, 'dist', application),

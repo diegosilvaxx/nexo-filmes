@@ -17,7 +17,9 @@ function application(file) {
 }
 
 for (const file of parsed.fileNames) {
-  const owner = application(file);
+  const packagePath = relative(root, file).split(sep);
+  const owner =
+    application(file) ?? (packagePath[0] === 'packages' ? `packages/${packagePath[1]}` : undefined);
   if (!owner || file.includes(`${sep}__mf__virtual${sep}`)) continue;
   const source = ts.createSourceFile(
     file,
@@ -39,7 +41,15 @@ for (const file of parsed.fileNames) {
         .resolvedModule?.resolvedFileName;
       const targetOwner = target
         ? application(target)
-        : /^@nexo\/(shell|catalog|movie|area)(?:\/|$)/.exec(specifier.text)?.[1];
+        : /^@nexo\/(shell|catalog|movie|area|bff)(?:\/|$)/.exec(specifier.text)?.[1];
+      if (
+        owner !== 'bff' &&
+        owner !== 'packages/tmdb' &&
+        (/^@nexo\/tmdb(?:\/|$)/.test(specifier.text) ||
+          (target && relative(root, target).split(sep).slice(0, 2).join('/') === 'packages/tmdb'))
+      ) {
+        failures.push(`${relative(root, file)}: código do servidor importado pelo navegador`);
+      }
       if (targetOwner && targetOwner !== owner) {
         const { line } = source.getLineAndCharacterOfPosition(specifier.getStart(source));
         failures.push(`${relative(root, file)}:${line + 1}: ${owner} importa ${targetOwner}`);

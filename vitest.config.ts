@@ -17,10 +17,16 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov'],
       include: ['packages/*/src/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
       exclude: ['**/*.test.{ts,tsx}', '**/main.tsx', '**/vite-env.d.ts'],
+      thresholds: {
+        'packages/tmdb/src/**': { lines: 70 },
+        'packages/movies/src/**': { lines: 70 },
+      },
     },
   },
   resolve: {
     alias: {
+      '@nexo/movies': fileURLToPath(new URL('./packages/movies/src/index.ts', import.meta.url)),
+      '@nexo/tmdb': fileURLToPath(new URL('./packages/tmdb/src/index.ts', import.meta.url)),
       '@nexo/ui': fileURLToPath(new URL('./packages/ui/src/index.tsx', import.meta.url)),
       '@nexo/http': fileURLToPath(new URL('./packages/http/src/index.ts', import.meta.url)),
       '@nexo/contracts': fileURLToPath(

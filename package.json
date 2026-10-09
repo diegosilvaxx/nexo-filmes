@@ -18,6 +18,8 @@
     "dev:catalog": "npm run dev --workspace @nexo/catalog",
     "dev:movie": "npm run dev --workspace @nexo/movie",
     "dev:area": "npm run dev --workspace @nexo/area",
+    "dev:bff": "npm run dev --workspace @nexo/bff",
+    "start:bff": "node dist/bff/server.js",
     "build": "npm run build --workspaces --if-present",
     "preview": "node scripts/dev.mjs --preview",
     "typecheck": "tsc --noEmit",
@@ -36,7 +38,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router-dom": "7.18.4",
-    "styled-components": "6.5.3"
+    "styled-components": "6.5.3",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@module-federation/vite": "1.23.4",
@@ -57,6 +60,7 @@
     "prettier": "3.9.9",
     "typescript": "5.9.3",
     "typescript-eslint": "8.71.1",
+    "tsx": "4.23.15",
     "vite": "8.3.4",
     "vitest": "5.0.3"
   }

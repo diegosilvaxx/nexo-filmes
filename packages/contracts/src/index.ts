@@ -12,3 +12,4 @@ export interface NavigationItem {
   to: string;
   label: string;
 }
+export * from './movies';

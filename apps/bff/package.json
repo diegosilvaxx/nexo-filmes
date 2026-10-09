@@ -1,0 +1,15 @@
+{
+  "name": "@nexo/bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "vite build",
+    "start": "node ../../dist/bff/server.js"
+  },
+  "dependencies": {
+    "@nexo/contracts": "0.1.0",
+    "@nexo/tmdb": "0.1.0"
+  }
+}

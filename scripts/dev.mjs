@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer, preview } from 'vite';
+import { tsImport } from 'tsx/esm/api';
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url));
 const applications = [
@@ -12,10 +13,16 @@ const applications = [
 const servers = [];
 const production = process.argv.includes('--preview');
 let closing = false;
+let bff;
 
 async function shutdown(exitCode = 0) {
   if (closing) return;
   closing = true;
+  if (bff) {
+    const closed = new Promise((resolve) => bff.close(resolve));
+    bff.closeAllConnections();
+    await closed;
+  }
   await Promise.allSettled(
     servers.map((server) =>
       production
@@ -32,6 +39,14 @@ process.once('SIGINT', () => void shutdown());
 process.once('SIGTERM', () => void shutdown());
 
 try {
+  const backend = production
+    ? await import(pathToFileURL(resolve(repositoryRoot, 'dist/bff/server.js')).href)
+    : await tsImport('../apps/bff/src/main.ts', {
+        parentURL: import.meta.url,
+        tsconfig: resolve(repositoryRoot, 'tsconfig.json'),
+      });
+  bff = await backend.startBff(repositoryRoot, production ? 'production' : 'development');
+  console.log(`BFF: http://127.0.0.1:${bff.address().port}`);
   for (const application of applications) {
     const options = {
       configFile: resolve(repositoryRoot, 'apps', application.folder, 'vite.config.ts'),
@@ -43,7 +58,7 @@ try {
     if (!production) await server.listen();
     console.log(`${application.label}: http://127.0.0.1:${application.port}`);
   }
-  console.log('\nNexo Filmes — quatro aplicações locais. Pressione Ctrl+C para encerrar.');
+  console.log('\nNexo Filmes — portal e BFF locais. Pressione Ctrl+C para encerrar.');
 } catch (error) {
   console.error('Falha ao iniciar o workspace:', error);
   await shutdown(1);
