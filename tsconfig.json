@@ -37,6 +37,7 @@
     ".storybook",
     "vitest.config.ts",
     "vitest.storybook.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.docker.config.ts"
   ]
 }

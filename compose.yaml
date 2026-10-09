@@ -1,0 +1,72 @@
+name: nexo-filmes
+
+x-frontend: &frontend
+  restart: unless-stopped
+  depends_on:
+    bff:
+      condition: service_healthy
+
+x-build: &frontend-build
+  context: .
+  target: frontend
+
+x-build-args: &frontend-args
+  VITE_PORTAL_URL: ${VITE_PORTAL_URL:-http://127.0.0.1:4100}
+  VITE_USER_DATA_DELAY_MIN_MS: ${VITE_USER_DATA_DELAY_MIN_MS:-300}
+  VITE_USER_DATA_DELAY_MAX_MS: ${VITE_USER_DATA_DELAY_MAX_MS:-1500}
+  VITE_USER_DATA_FAIL_WRITES: ${VITE_USER_DATA_FAIL_WRITES:-true}
+
+services:
+  bff:
+    build:
+      context: .
+      target: bff
+    environment:
+      TMDB_READ_ACCESS_TOKEN: ${TMDB_READ_ACCESS_TOKEN:?Configure TMDB_READ_ACCESS_TOKEN no .env}
+    expose:
+      - '4200'
+    restart: unless-stopped
+
+  shell:
+    <<: *frontend
+    build:
+      <<: *frontend-build
+      args:
+        <<: *frontend-args
+        APP: shell
+    environment:
+      NEXO_CATALOG_REMOTE_URL: ${NEXO_CATALOG_REMOTE_URL:-http://127.0.0.1:4101/remoteEntry.js}
+      NEXO_MOVIE_REMOTE_URL: ${NEXO_MOVIE_REMOTE_URL:-http://127.0.0.1:4102/remoteEntry.js}
+      NEXO_AREA_REMOTE_URL: ${NEXO_AREA_REMOTE_URL:-http://127.0.0.1:4103/remoteEntry.js}
+    ports:
+      - '127.0.0.1:4100:80'
+
+  catalog:
+    <<: *frontend
+    build:
+      <<: *frontend-build
+      args:
+        <<: *frontend-args
+        APP: catalog
+    ports:
+      - '127.0.0.1:4101:80'
+
+  movie:
+    <<: *frontend
+    build:
+      <<: *frontend-build
+      args:
+        <<: *frontend-args
+        APP: movie
+    ports:
+      - '127.0.0.1:4102:80'
+
+  area:
+    <<: *frontend
+    build:
+      <<: *frontend-build
+      args:
+        <<: *frontend-args
+        APP: area
+    ports:
+      - '127.0.0.1:4103:80'

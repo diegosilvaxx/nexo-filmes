@@ -2,7 +2,11 @@
 
 Portal de filmes com React 19, TypeScript strict, Module Federation, Axios, styled-components e npm workspaces.
 
+[Execução com Docker](#docker) · [Telas](#telas) · [Resultados dos testes](#resultados-dos-testes)
+
 ## Requisitos
+
+Para desenvolvimento e testes locais:
 
 - Node.js 22.12 ou superior. Versão recomendada: Node.js 24, indicada em `.nvmrc`.
 - npm 10 ou superior.
@@ -29,6 +33,139 @@ npm run dev
 `npm run dev` inicia o BFF e as quatro aplicações. `Ctrl+C` encerra os servidores. As portas do portal são fixas; uma porta ocupada interrompe a inicialização. Para rodar um remote separadamente com dados, inicie também o BFF. Os servidores Vite encaminham `/api` para ele.
 
 `npm run dev:bff` observa mudanças no código do servidor. Na execução conjunta, reinicie `npm run dev` após alterar o BFF.
+
+## Docker
+
+Esta execução usa builds de produção e exige apenas Docker com Compose; Node.js e npm ficam nos containers.
+
+1. Instale e abra o Docker Desktop com containers Linux. Confira a instalação com `docker compose version`.
+2. Abra um terminal na raiz do repositório, onde estão `compose.yaml` e `Dockerfile`.
+3. Copie `.env.example` para `.env` e preencha `TMDB_READ_ACCESS_TOKEN` com o **API Read Access Token** da TMDB. Se o `.env` já existir, mantenha os valores locais.
+4. Encerre outros servidores que estejam usando as portas 4100 a 4103 e inicie os serviços com o comando abaixo.
+
+Para copiar o ambiente no PowerShell, caso ele ainda não exista:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+No Linux ou macOS:
+
+```bash
+cp .env.example .env
+```
+
+Após preencher o token, inicie o sistema:
+
+```bash
+docker compose up --build --wait
+```
+
+Abra [http://127.0.0.1:4100](http://127.0.0.1:4100). Os três remotes também ficam disponíveis nas portas 4101, 4102 e 4103, conforme a tabela de aplicações. A primeira execução baixa as imagens e instala as dependências; as próximas reutilizam as camadas de build. O comando retorna quando os cinco serviços estão saudáveis e deixa os containers em segundo plano.
+
+```bash
+docker compose ps
+docker compose logs --tail=100
+docker compose down
+```
+
+O `Dockerfile` usa etapas separadas para instalação, build e execução. Cada frontend recebe somente seu build e é servido por Nginx, com fallback de navegação, CORS nos remotes, assets com hash em cache e configuração runtime sem cache. O BFF usa Node.js 24, dependências de produção e um usuário sem privilégios de root. Os frontends aguardam a saúde do BFF na inicialização; um remote pode ser parado ou recriado independentemente.
+
+O token é fornecido apenas ao ambiente do BFF durante a execução. O `.dockerignore` exclui todos os arquivos `.env`, dependências locais, relatórios e builds do contexto. O BFF escuta em `0.0.0.0:4200` dentro da rede dos containers; essa porta não é publicada no computador. Cada Nginx encaminha `/api` ao serviço `bff`. `BFF_HOST`, `BFF_PORT` e `NEXO_BFF_URL` do ambiente de desenvolvimento não alteram essa rede interna.
+
+O Compose lê o `.env` da raiz e as variáveis do processo; arquivos `.env.local` e `.env.production` não são carregados por essa execução. As variáveis `VITE_PORTAL_URL` e `VITE_USER_DATA_*` são argumentos públicos de build: após modificá-las ou alterar o código, execute novamente `docker compose up --build --wait`.
+
+As variáveis `NEXO_CATALOG_REMOTE_URL`, `NEXO_MOVIE_REMOTE_URL` e `NEXO_AREA_REMOTE_URL` configuram o JSON do Shell quando o container inicia. Use endereços acessíveis pelo navegador, como os padrões em `127.0.0.1`, e não os nomes internos dos serviços. Depois de alterar essas URLs no `.env`, aplique a configuração sem recompilar:
+
+```bash
+docker compose up --no-deps --force-recreate --wait shell
+```
+
+Favoritos e avaliações continuam no navegador, por origem. Ao acessar o mesmo endereço do desenvolvimento, os dados locais permanecem disponíveis; `docker compose down` não os remove. Nenhum banco ou volume de dados é necessário.
+
+Para validar a configuração sem exibir os valores do ambiente, execute `docker compose config --quiet`. Com os containers em execução e as dependências de testes instaladas, `npm run test:docker` verifica saúde, proxy, configuração runtime, CORS, arquivos ausentes, rotas profundas, portal integrado, persistência e remotes independentes. As consultas de filmes são simuladas no navegador; a verificação HTTP de saúde utiliza o BFF real. O CI executa esses testes com uma credencial fictícia, sem chamar a TMDB.
+
+Para executar esses testes localmente, também é necessário ter Node.js e npm no computador:
+
+```bash
+npm ci
+npx playwright install chromium
+npm run test:docker
+```
+
+O relatório Docker fica em `playwright-report-docker/`, separado do E2E. Abra-o com `npx playwright show-report playwright-report-docker`. Os arquivos de diagnóstico ficam em `test-results-docker/`.
+
+Referências: [Docker Desktop no Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [build em etapas](https://docs.docker.com/build/building/multi-stage/) e [ordem de inicialização no Compose](https://docs.docker.com/compose/how-tos/startup-order/).
+
+## Telas
+
+Capturas do portal em execução com Docker e dados reais da TMDB. Favoritos e avaliações exibidos são exemplos locais.
+
+### Catálogo
+
+![Catálogo com busca, filtro de gênero, ordenação e pôsteres](docs/images/catalogo.png)
+
+<details>
+<summary>Detalhe do filme e avaliação</summary>
+
+![Clube da Luta com informações, direção, elenco e avaliação salva](docs/images/detalhe-avaliacao.png)
+
+</details>
+
+<details>
+<summary>Favoritos e notas pessoais</summary>
+
+![Favoritos com Clube da Luta e Matrix, notas pessoais e contador sincronizado](docs/images/favoritos.png)
+
+</details>
+
+<details>
+<summary>Painel pessoal</summary>
+
+![Painel com totais de favoritos e avaliados, nota média e gênero mais frequente](docs/images/painel.png)
+
+</details>
+
+<details>
+<summary>Catálogo em 360 px</summary>
+
+<img src="docs/images/mobile.png" alt="Catálogo responsivo em uma largura de 360 pixels" width="360" />
+
+</details>
+
+## Resultados dos testes
+
+Verificação local realizada em 9 de outubro de 2026:
+
+| Verificação                               | Resultado            |
+| ----------------------------------------- | -------------------- |
+| Unitários e regras de negócio             | 143 testes aprovados |
+| Componentes e acessibilidade no Storybook | 33 testes aprovados  |
+| E2E em desktop e mobile                   | 36 testes aprovados  |
+| Integração Docker                         | 2 testes aprovados   |
+| Cobertura de linhas                       | 93,03%               |
+| Arquitetura, tipos, lint e formatação     | Aprovados            |
+| Builds do portal, BFF e Storybook         | Aprovados            |
+
+As imagens abaixo são capturas dos relatórios gerados pelas suítes. Os testes de filmes usam respostas simuladas, sem depender da TMDB real.
+
+### Integração Docker
+
+![Relatório Playwright com os dois testes Docker aprovados e nenhuma falha](docs/images/testes-docker.png)
+
+<details>
+<summary>E2E: 36 testes aprovados em desktop e mobile</summary>
+
+![Relatório Playwright com 36 testes aprovados, incluindo acessibilidade e fluxos do portal](docs/images/testes-e2e.png)
+
+</details>
+
+<details>
+<summary>Cobertura das regras de negócio</summary>
+
+![Relatório de cobertura V8 com 93,03% das linhas cobertas](docs/images/cobertura.png)
+
+</details>
 
 ## Estrutura
 
@@ -73,6 +210,7 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 | `npm run test:coverage`   | Relatório de cobertura V8                            |
 | `npm run test:e2e`        | Testes de navegador com Playwright                   |
 | `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador        |
+| `npm run test:docker`     | Integração no portal iniciado pelo Docker Compose    |
 | `npm run storybook`       | Catálogo interativo de componentes na porta 6006     |
 | `npm run build:storybook` | Build estático da documentação de componentes        |
 | `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
@@ -133,6 +271,8 @@ O setup gera builds reais do Shell e dos remotes em `dist/e2e/`, inicia prévias
 No modo `e2e`, o repositório real mantém atraso fixo de 500 ms e falha nas escritas de IDs terminados em `13`, permitindo verificar estados otimistas, persistência e reversão. Falhas geram screenshot, vídeo e trace; o relatório HTML fica em `playwright-report/` e os arquivos de diagnóstico em `test-results/`. Esses diretórios são ignorados pelo Git.
 
 O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e os builds do portal e do Storybook; após essa aprovação, executa os testes de componentes e os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
+
+Um job adicional gera as imagens Docker, inicia os cinco containers, verifica a alteração das URLs em runtime sem recompilar e executa `npm run test:docker`. A saúde e os testes de integração precisam passar; os containers são encerrados ao final, inclusive em falhas, e o relatório do navegador fica disponível como artefato.
 
 Referências: [Playwright](https://playwright.dev/docs/intro), [setup e teardown](https://playwright.dev/docs/test-global-setup-teardown) e [GitHub Actions](https://docs.github.com/en/actions).
 

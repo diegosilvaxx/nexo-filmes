@@ -19,18 +19,17 @@ Favoritos e avaliações passam pelo repositório assíncrono; as aplicações n
 
 ## Diferenciais
 
-| Diferencial           | Local de verificação                                                             |
-| --------------------- | -------------------------------------------------------------------------------- |
-| Ordenação             | Seletor do catálogo e parâmetro `sort` na URL                                    |
-| Exclusão de avaliação | Botão no formulário de uma avaliação existente                                   |
-| Painel pessoal        | `/painel`, incluindo média com uma casa decimal e desempate alfabético de gênero |
-| E2E                   | `npm run test:e2e`                                                               |
-| URLs em runtime       | `/runtime-config.json`, recarregado ao tentar recuperar um remote                |
-| BFF                   | Token apenas no servidor; navegador acessa `/api`                                |
-| CI                    | `.github/workflows/ci.yml`                                                       |
-| Storybook             | `npm run storybook`, `npm run test:storybook` e `npm run build:storybook`        |
-
-Docker não está incluído nesta versão.
+| Diferencial           | Local de verificação                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| Ordenação             | Seletor do catálogo e parâmetro `sort` na URL                                        |
+| Exclusão de avaliação | Botão no formulário de uma avaliação existente                                       |
+| Painel pessoal        | `/painel`, incluindo média com uma casa decimal e desempate alfabético de gênero     |
+| E2E                   | `npm run test:e2e`                                                                   |
+| URLs em runtime       | `/runtime-config.json`, recarregado ao tentar recuperar um remote                    |
+| BFF                   | Token apenas no servidor; navegador acessa `/api`                                    |
+| Docker                | `docker compose up --build --wait`, saúde dos cinco serviços e `npm run test:docker` |
+| CI                    | `.github/workflows/ci.yml`                                                           |
+| Storybook             | `npm run storybook`, `npm run test:storybook` e `npm run build:storybook`            |
 
 ## Verificação automatizada
 
@@ -49,7 +48,20 @@ npm run test:storybook
 npm run test:e2e
 ```
 
-Em Linux, use `npx playwright install --with-deps chromium`. O CI executa essas verificações sem token da TMDB. Os testes utilizam dados simulados, builds reais das aplicações e armazenamento isolado por contexto de navegador. `npm test` executa somente os testes unitários; `npm run check` reúne as verificações de código, os testes unitários e os builds do portal.
+Em Linux, use `npx playwright install --with-deps chromium`. O CI executa essas verificações sem token real da TMDB. Os testes utilizam dados simulados, builds reais das aplicações e armazenamento isolado por contexto de navegador. `npm test` executa somente os testes unitários; `npm run check` reúne as verificações de código, os testes unitários e os builds do portal.
+
+Para verificar a execução em containers, encerre servidores locais nas portas 4100 a 4103, abra o Docker e execute:
+
+```bash
+docker compose config --quiet
+docker compose up --build --wait
+npm run test:docker
+docker compose down
+```
+
+O teste Docker verifica o Nginx, o proxy para o BFF real, a saúde, o JSON runtime sem cache, CORS dos remotes e 404 de assets ausentes. Também verifica as rotas profundas, integração dos remotes, favorito, avaliação, recarga, painel e aplicações independentes com respostas de filmes simuladas no navegador. O CI repete essa execução em Linux e verifica a recriação do Shell com uma URL de remote alterada, sem novo build.
+
+Os relatórios Docker ficam em `playwright-report-docker/` e os diagnósticos em `test-results-docker/`, separados das saídas do E2E. Abra o relatório com `npx playwright show-report playwright-report-docker`. O README inclui capturas das telas e dos relatórios da verificação local.
 
 Os relatórios ficam em `coverage/` e `playwright-report/`; screenshots, vídeos e traces de falhas ficam em `test-results/`. Esses diretórios são ignorados pelo Git. Para abrir o relatório de navegador, use `npm run test:e2e:report`.
 

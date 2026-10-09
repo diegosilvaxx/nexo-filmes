@@ -1,0 +1,7 @@
+{
+  "remotes": {
+    "catalog": "${NEXO_CATALOG_REMOTE_URL}",
+    "movie": "${NEXO_MOVIE_REMOTE_URL}",
+    "area": "${NEXO_AREA_REMOTE_URL}"
+  }
+}

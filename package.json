@@ -32,6 +32,7 @@
     "test:coverage": "vitest run --project unit --coverage",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
+    "test:docker": "playwright test --config playwright.docker.config.ts",
     "storybook": "storybook dev --port 6006 --host 127.0.0.1 --no-open --disable-telemetry --exact-port",
     "build:storybook": "storybook build --disable-telemetry",
     "test:storybook": "vitest run --project storybook",

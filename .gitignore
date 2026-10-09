@@ -16,6 +16,8 @@ storybook-static/
 coverage/
 playwright-report/
 test-results/
+playwright-report-docker/
+test-results-docker/
 
 # Arquivos temporários
 *.log

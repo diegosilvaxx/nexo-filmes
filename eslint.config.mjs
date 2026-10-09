@@ -14,6 +14,8 @@ export default defineConfig([
     'storybook-static/**',
     'playwright-report/**',
     'test-results/**',
+    'playwright-report-docker/**',
+    'test-results-docker/**',
   ]),
   js.configs.recommended,
   tseslint.configs.recommended,

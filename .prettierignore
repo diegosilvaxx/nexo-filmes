@@ -4,5 +4,7 @@ coverage/
 storybook-static/
 playwright-report/
 test-results/
+playwright-report-docker/
+test-results-docker/
 package-lock.json
 **/__mf__virtual/**
