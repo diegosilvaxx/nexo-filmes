@@ -1,38 +1,26 @@
-import {
-  Availability,
-  BrandSubtitle,
-  Description,
-  Footer,
-  Header,
-  Main,
-  Page,
-  SkipLink,
-  Title,
-  Wordmark,
-} from './application.styles';
+import { useEffect } from 'react';
+import { Availability, Description, Title } from './application.styles';
 
 export { UIProvider } from './UIProvider';
+export { SiteLayout } from './SiteLayout';
+export { RecoveryBoundary, IsolatedArea, LoadingState } from './RecoveryBoundary';
+export { NotFound } from './NotFound';
+export { NavigationLink, FavoriteCount, TextLink } from './application.styles';
 
 interface ApplicationPageProps {
   title: string;
   description: string;
 }
 
-export function ApplicationPage({ title, description }: ApplicationPageProps) {
+export function PageContent({ title, description }: ApplicationPageProps) {
+  useEffect(() => {
+    document.title = `${title} · Nexo Filmes`;
+  }, [title]);
   return (
-    <Page>
-      <SkipLink href="#content">Ir para o conteúdo</SkipLink>
-      <Header>
-        <Wordmark>
-          Nexo<BrandSubtitle>FILMES</BrandSubtitle>
-        </Wordmark>
-      </Header>
-      <Main id="content" tabIndex={-1}>
-        <Title>{title}</Title>
-        <Description>{description}</Description>
-        <Availability>Em breve</Availability>
-      </Main>
-      <Footer>Nexo Filmes</Footer>
-    </Page>
+    <section>
+      <Title>{title}</Title>
+      <Description>{description}</Description>
+      <Availability>Em breve</Availability>
+    </section>
   );
 }

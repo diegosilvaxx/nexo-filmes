@@ -1,10 +1,9 @@
-import { ApplicationPage } from '@nexo/ui';
+import { PageContent } from '@nexo/ui';
+import { useLocation } from 'react-router-dom';
 
 export function App() {
-  return (
-    <ApplicationPage
-      title="Minha área"
-      description="Seus favoritos e suas avaliações em um só lugar."
-    />
-  );
+  const { pathname } = useLocation();
+  if (pathname === '/painel')
+    return <PageContent title="Painel" description="Um resumo dos seus filmes e avaliações." />;
+  return <PageContent title="Favoritos" description="Seus filmes favoritos em um só lugar." />;
 }

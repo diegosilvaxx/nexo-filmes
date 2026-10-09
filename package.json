@@ -19,23 +19,27 @@
     "dev:movie": "npm run dev --workspace @nexo/movie",
     "dev:area": "npm run dev --workspace @nexo/area",
     "build": "npm run build --workspaces --if-present",
-    "preview": "npm run preview --workspace @nexo/shell",
+    "preview": "node scripts/dev.mjs --preview",
     "typecheck": "tsc --noEmit",
+    "architecture": "node scripts/check-architecture.mjs",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run build"
+    "check": "npm run architecture && npm run typecheck && npm run lint && npm run format:check && npm test && npm run build"
   },
   "dependencies": {
+    "@module-federation/runtime": "2.9.2",
     "axios": "1.20.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4",
     "styled-components": "6.5.3"
   },
   "devDependencies": {
+    "@module-federation/vite": "1.23.4",
     "@eslint/js": "10.0.1",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

@@ -7,6 +7,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   globalIgnores([
+    '**/__mf__virtual/**',
     'node_modules/**',
     'dist/**',
     'coverage/**',

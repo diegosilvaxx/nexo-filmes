@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link, NavLink } from 'react-router-dom';
 
 export const Page = styled.div`
   min-height: 100vh;
@@ -23,6 +24,10 @@ export const SkipLink = styled.a`
 `;
 
 export const Header = styled.header`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px 32px;
   padding: 24px
     max(
       ${({ theme }) => theme.layout.gutter},
@@ -31,13 +36,57 @@ export const Header = styled.header`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-export const Wordmark = styled.span`
+export const Wordmark = styled(Link)`
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.5px;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+`;
+
+export const Navigation = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    gap: 16px;
+  }
+`;
+
+export const NavigationLink = styled(NavLink)`
+  color: ${({ theme }) => theme.colors.muted};
+  font-size: 14px;
+  text-decoration: none;
+  &[aria-current='page'],
+  &:hover {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+export const TextLink = styled(Link)`
+  display: inline-block;
+  margin-top: 24px;
+  color: ${({ theme }) => theme.colors.text};
+  text-underline-offset: 4px;
+`;
+
+export const FavoriteCount = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 21px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border: 1px solid ${({ theme }) => theme.colors.badgeBorder};
+  border-radius: 5px;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 11px;
 `;
 
 export const BrandSubtitle = styled.span`

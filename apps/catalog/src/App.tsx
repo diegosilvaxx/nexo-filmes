@@ -1,5 +1,7 @@
-import { ApplicationPage } from '@nexo/ui';
+import { PageContent } from '@nexo/ui';
+import { useSearchParams } from 'react-router-dom';
 
 export function App() {
-  return <ApplicationPage title="Catálogo" description="Encontre filmes para assistir." />;
+  useSearchParams();
+  return <PageContent title="Catálogo" description="Encontre filmes para assistir." />;
 }

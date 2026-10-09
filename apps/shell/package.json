@@ -4,13 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --config ../../vite.config.ts --port 4100 --strictPort",
-    "build": "vite build --config ../../vite.config.ts",
-    "preview": "vite preview --config ../../vite.config.ts --port 4100 --strictPort"
+    "dev": "vite --port 4100 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 4100 --strictPort"
   },
   "dependencies": {
+    "@module-federation/runtime": "2.9.2",
+    "@nexo/contracts": "*",
+    "@nexo/http": "*",
     "@nexo/ui": "*",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4"
   }
 }

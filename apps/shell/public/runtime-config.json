@@ -1,0 +1,7 @@
+{
+  "remotes": {
+    "catalog": "http://127.0.0.1:4101/remoteEntry.js",
+    "movie": "http://127.0.0.1:4102/remoteEntry.js",
+    "area": "http://127.0.0.1:4103/remoteEntry.js"
+  }
+}

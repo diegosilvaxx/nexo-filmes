@@ -1,6 +1,6 @@
 # Nexo Filmes
 
-Catálogo de filmes com busca, favoritos e avaliações. React 19, TypeScript strict, Axios, styled-components e npm workspaces.
+Portal de filmes com React 19, TypeScript strict, Module Federation, Axios, styled-components e npm workspaces.
 
 ## Requisitos
 
@@ -37,32 +37,56 @@ packages/
   contracts/   # Tipos compartilhados
   http/        # Cliente HTTP com Axios
   ui/          # Componentes e estilos comuns
-scripts/       # Execução do workspace
+scripts/       # Execução e verificação de arquitetura
+tooling/       # Configuração de Vite e remotes
 tests/         # Configuração de testes
 ```
 
-As aplicações utilizam pacotes compartilhados de UI, contratos e infraestrutura HTTP. Importações entre aplicações não fazem parte da arquitetura. As dependências são gerenciadas por um único `package-lock.json`.
+O Shell carrega os três remotes com Module Federation. Cada aplicação possui configuração e build próprios, e pode executar de forma independente. React, React DOM, React Router e styled-components são compartilhados como singletons. Apenas as entradas independentes montam o router e o `UIProvider`; os componentes expostos utilizam os contextos do Shell.
+
+Os pacotes compartilhados fornecem UI, contratos e infraestrutura HTTP. `npm run architecture` verifica importações estáticas, reexports e imports dinâmicos com caminho literal, impedindo dependências diretas entre aplicações. As dependências são gerenciadas por um único `package-lock.json`.
 
 Os estilos são definidos com styled-components, tema tipado e estilos globais aplicados pelo `UIProvider`. O pacote `@nexo/http` disponibiliza uma fábrica de clientes Axios com base URL configurável, timeout de 15 segundos e cabeçalho `Accept: application/json`. As requisições do navegador utilizarão o BFF, sem acesso ao token da TMDB.
 
 ## Comandos
 
-| Comando                 | Descrição                                |
-| ----------------------- | ---------------------------------------- |
-| `npm run check`         | TypeScript, lint, formatação e builds    |
-| `npm run typecheck`     | Verificação de tipos sem emitir arquivos |
-| `npm run lint`          | ESLint sem avisos                        |
-| `npm run format`        | Formatação com Prettier                  |
-| `npm run build`         | Builds das quatro aplicações em `dist/`  |
-| `npm run preview`       | Prévia do build do Shell na porta 4100   |
-| `npm test`              | Testes com Vitest                        |
-| `npm run test:coverage` | Relatório de cobertura V8                |
+| Comando                 | Descrição                                          |
+| ----------------------- | -------------------------------------------------- |
+| `npm run check`         | Arquitetura, tipos, lint, formato, testes e builds |
+| `npm run architecture`  | Verificação das importações entre aplicações       |
+| `npm run typecheck`     | Verificação de tipos sem emitir arquivos           |
+| `npm run lint`          | ESLint sem avisos                                  |
+| `npm run format`        | Formatação com Prettier                            |
+| `npm run build`         | Builds das quatro aplicações em `dist/`            |
+| `npm run preview`       | Prévia dos builds das quatro aplicações            |
+| `npm test`              | Testes com Vitest                                  |
+| `npm run test:coverage` | Relatório de cobertura V8                          |
 
 ## Estado atual
 
-O workspace inclui quatro aplicações independentes e telas iniciais. A integração dos remotes, as rotas, a conexão com a TMDB e a persistência de dados ainda não estão implementadas.
+O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
-Vitest, Testing Library e jsdom estão configurados. Ainda não há arquivos de testes nem medição de cobertura das regras de negócio.
+As páginas apresentam telas iniciais; o contador permanece em zero. Os dados da TMDB, favoritos, avaliações e métricas ainda não estão implementados. Os testes atuais verificam configuração, carregamento, timeout e recuperação dos remotes. A cobertura das regras de negócio será medida quando essas regras estiverem implementadas.
+
+## URLs dos remotes
+
+O Shell obtém `/runtime-config.json` pelo cliente Axios. Os endereços podem ser modificados sem recompilar o Shell:
+
+```json
+{
+  "remotes": {
+    "catalog": "http://127.0.0.1:4101/remoteEntry.js",
+    "movie": "http://127.0.0.1:4102/remoteEntry.js",
+    "area": "http://127.0.0.1:4103/remoteEntry.js"
+  }
+}
+```
+
+Em desenvolvimento, o arquivo está em `apps/shell/public/runtime-config.json`. Após o build, edite `dist/shell/runtime-config.json`. Nos servidores Vite, as variáveis `NEXO_CATALOG_REMOTE_URL`, `NEXO_MOVIE_REMOTE_URL` e `NEXO_AREA_REMOTE_URL` em `.env` sobrescrevem os endereços; reinicie os servidores após modificar essas variáveis. O arquivo `.env.example` contém os nomes disponíveis.
+
+Uma nova tentativa busca novamente a configuração e invalida a entrada do remote. Em hospedagem estática, sirva o JSON sem cache, habilite CORS para os arquivos dos remotes e configure fallback de navegação para `index.html` em cada aplicação.
+
+Para verificar os builds localmente, execute `npm run build` e `npm run preview`.
 
 ## Escopo funcional
 

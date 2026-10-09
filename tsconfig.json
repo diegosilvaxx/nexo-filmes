@@ -18,6 +18,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node", "vite/client", "@testing-library/jest-dom"],
     "paths": {
       "@nexo/ui": ["./packages/ui/src/index.tsx"],
@@ -25,5 +26,5 @@
       "@nexo/contracts": ["./packages/contracts/src/index.ts"]
     }
   },
-  "include": ["apps", "packages", "tests", "vite.config.ts", "vitest.config.ts"]
+  "include": ["apps", "packages", "tests", "tooling", "vitest.config.ts"]
 }
