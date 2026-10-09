@@ -18,6 +18,7 @@ export default defineConfig({
       include: ['packages/*/src/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
       exclude: ['**/*.test.{ts,tsx}', '**/main.tsx', '**/vite-env.d.ts'],
       thresholds: {
+        'apps/area/src/statistics.ts': { lines: 70 },
         'apps/movie/src/ReviewForm.tsx': { lines: 70 },
         'packages/user-data/src/**': { lines: 70 },
         'apps/catalog/src/query.ts': { lines: 70 },

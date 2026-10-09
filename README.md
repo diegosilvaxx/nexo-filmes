@@ -44,7 +44,7 @@ packages/
   http/        # Cliente HTTP com Axios
   movies/      # Cliente do BFF para as telas
   tmdb/        # Adapter da TMDB, exclusivo do servidor
-  user-data/   # Repositório local e estado compartilhado de favoritos
+  user-data/   # Repositório local e estado de favoritos e avaliações
   ui/          # Componentes e estilos comuns
 scripts/       # Execução e verificação de arquitetura
 tooling/       # Configuração de Vite e remotes
@@ -76,9 +76,9 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 
 O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
-O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. O detalhe exibe sinopse, duração, direção e elenco, permite favoritar e criar, editar ou excluir uma avaliação. A página de favoritos mostra a nota pessoal e permite remover filmes, com contador sincronizado no cabeçalho. O painel ainda apresenta uma tela inicial.
+O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. O detalhe exibe sinopse, duração, direção e elenco, permite favoritar e criar, editar ou excluir uma avaliação. A página de favoritos mostra a nota pessoal e permite remover filmes, com contador sincronizado no cabeçalho. O painel exibe totais de favoritos e avaliados, média das notas e gênero mais frequente entre os favoritos.
 
-Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos e avaliações. Os testes de formulário verificam mensagens por campo, foco no primeiro erro, preservação do rascunho, substituição e exclusão. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data`, na normalização da consulta do catálogo e no formulário de avaliação. Os testes não leem o token local.
+Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos e avaliações. Os testes de formulário verificam mensagens por campo, foco no primeiro erro, preservação do rascunho, substituição e exclusão. O painel tem testes de cálculo, desempate, formatação, estados de leitura e atualização de métricas. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data`, na normalização da consulta do catálogo, no formulário de avaliação e no cálculo de estatísticas. Os testes não leem o token local.
 
 ## Catálogo e favoritos
 
@@ -101,6 +101,12 @@ Acessar `/filme/13` permite consultar o filme normalmente. Com a simulação de 
 Salvar novamente substitui a avaliação anterior. A nota pessoal nos favoritos muda imediatamente e volta ao valor anterior se a gravação falhar; o formulário mantém o rascunho para outra tentativa. Durante a escrita, os controles ficam desativados. A exclusão remove somente a avaliação, preserva o favorito e permite avaliar novamente. Uma atualização vinda de outra aba não sobrescreve um rascunho em edição.
 
 Favoritos e avaliações usam registros versionados separados, `nexo-filmes:favorites:v1` e `nexo-filmes:reviews:v1`. Uma falha na leitura de avaliações não impede a lista ou o contador de favoritos. Remover um favorito preserva sua avaliação.
+
+## Painel
+
+`/painel` apresenta o total de favoritos, o total de filmes avaliados, a média de todas as notas pessoais com uma casa decimal e o gênero mais frequente entre os favoritos. Avaliações de filmes que não estão nos favoritos também entram no total de avaliados e na média. Cada gênero é contado uma vez por filme; empates usam a ordem alfabética em português.
+
+Sem avaliações ou gêneros disponíveis, a métrica correspondente exibe `—`. Os recursos carregam de forma independente: uma falha nas avaliações preserva as estatísticas dos favoritos e oferece nova tentativa, e vice-versa. Mudanças otimistas e reversões atualizam as métricas sem recarregar a página, com indicação de salvamento. O painel utiliza os mesmos estados compartilhados das outras telas, sem novas consultas à TMDB.
 
 ## URLs dos remotes
 

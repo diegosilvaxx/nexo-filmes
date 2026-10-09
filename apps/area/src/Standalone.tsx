@@ -28,7 +28,7 @@ export function Standalone() {
           path="/painel"
           element={
             <IsolatedArea>
-              <App />
+              <App standalone />
             </IsolatedArea>
           }
         />

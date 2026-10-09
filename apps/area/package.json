@@ -9,10 +9,12 @@
     "preview": "vite preview --port 4103 --strictPort"
   },
   "dependencies": {
+    "@nexo/contracts": "*",
     "@nexo/ui": "*",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router-dom": "7.18.4",
+    "styled-components": "6.5.3",
     "@nexo/user-data": "*"
   }
 }
