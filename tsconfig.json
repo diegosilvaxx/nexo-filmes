@@ -29,5 +29,5 @@
       "@nexo/contracts": ["./packages/contracts/src/index.ts"]
     }
   },
-  "include": ["apps", "packages", "tests", "tooling", "vitest.config.ts"]
+  "include": ["apps", "packages", "tests", "tooling", "vitest.config.ts", "playwright.config.ts"]
 }

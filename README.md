@@ -59,18 +59,20 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 
 ## Comandos
 
-| Comando                 | Descrição                                          |
-| ----------------------- | -------------------------------------------------- |
-| `npm run check`         | Arquitetura, tipos, lint, formato, testes e builds |
-| `npm run architecture`  | Verificação das importações entre aplicações       |
-| `npm run typecheck`     | Verificação de tipos sem emitir arquivos           |
-| `npm run lint`          | ESLint sem avisos                                  |
-| `npm run format`        | Formatação com Prettier                            |
-| `npm run build`         | Builds do BFF e das quatro aplicações em `dist/`   |
-| `npm run preview`       | Prévia dos builds e BFF com ambiente de produção   |
-| `npm run start:bff`     | Executa o build do BFF                             |
-| `npm test`              | Testes com Vitest                                  |
-| `npm run test:coverage` | Relatório de cobertura V8                          |
+| Comando                   | Descrição                                          |
+| ------------------------- | -------------------------------------------------- |
+| `npm run check`           | Arquitetura, tipos, lint, formato, testes e builds |
+| `npm run architecture`    | Verificação das importações entre aplicações       |
+| `npm run typecheck`       | Verificação de tipos sem emitir arquivos           |
+| `npm run lint`            | ESLint sem avisos                                  |
+| `npm run format`          | Formatação com Prettier                            |
+| `npm run build`           | Builds do BFF e das quatro aplicações em `dist/`   |
+| `npm run preview`         | Prévia dos builds e BFF com ambiente de produção   |
+| `npm run start:bff`       | Executa o build do BFF                             |
+| `npm test`                | Testes com Vitest                                  |
+| `npm run test:coverage`   | Relatório de cobertura V8                          |
+| `npm run test:e2e`        | Testes de navegador com Playwright                 |
+| `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador      |
 
 ## Estado atual
 
@@ -86,7 +88,7 @@ Exemplos de URLs compartilháveis: `/filmes?page=2&genreId=18&sort=rating` e `/f
 
 `@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas de favoritos e avaliações. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` identifica o recurso e notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
 
-Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções de favoritos, salvamentos e exclusões de avaliações. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; em modo de teste ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
+Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções de favoritos, salvamentos e exclusões de avaliações. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; no modo `test` usado pelo Vitest ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
 
 Favoritos persistem no navegador, por origem, e mudanças em outras abas da mesma origem atualizam o estado. Aplicações independentes em portas distintas têm armazenamento separado. Seus links para outras aplicações usam `VITE_PORTAL_URL`, com padrão `http://127.0.0.1:4100`. Dados corrompidos ou armazenamento indisponível apresentam erro sem sobrescrever o conteúdo existente.
 
@@ -107,6 +109,27 @@ Favoritos e avaliações usam registros versionados separados, `nexo-filmes:favo
 `/painel` apresenta o total de favoritos, o total de filmes avaliados, a média de todas as notas pessoais com uma casa decimal e o gênero mais frequente entre os favoritos. Avaliações de filmes que não estão nos favoritos também entram no total de avaliados e na média. Cada gênero é contado uma vez por filme; empates usam a ordem alfabética em português.
 
 Sem avaliações ou gêneros disponíveis, a métrica correspondente exibe `—`. Os recursos carregam de forma independente: uma falha nas avaliações preserva as estatísticas dos favoritos e oferece nova tentativa, e vice-versa. Mudanças otimistas e reversões atualizam as métricas sem recarregar a página, com indicação de salvamento. O painel utiliza os mesmos estados compartilhados das outras telas, sem novas consultas à TMDB.
+
+## Testes de navegador e CI
+
+Após instalar as dependências, instale o Chromium do Playwright uma vez:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Em Linux, utilize `npx playwright install --with-deps chromium` para instalar também as bibliotecas do sistema. Para abrir o relatório da última execução, use `npm run test:e2e:report`.
+
+A suíte executa os mesmos 16 cenários em desktop de 1440 px e celular de 360 px, totalizando 32 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+
+O setup gera builds reais do Shell e dos remotes em `dist/e2e/`, inicia prévias nas portas 4300 a 4303 e encerra esses servidores ao terminar. As portas precisam estar livres. Os builds normais e as portas de desenvolvimento são preservados. As chamadas de API recebem respostas locais simuladas, sem iniciar o BFF ou exigir credenciais da TMDB. Cada teste utiliza um contexto de navegador com armazenamento isolado e grava dados pelos controles da interface.
+
+No modo `e2e`, o repositório real mantém atraso fixo de 500 ms e falha nas escritas de IDs terminados em `13`, permitindo verificar estados otimistas, persistência e reversão. Falhas geram screenshot, vídeo e trace; o relatório HTML fica em `playwright-report/` e os arquivos de diagnóstico em `test-results/`. Esses diretórios são ignorados pelo Git.
+
+O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
+
+Referências: [Playwright](https://playwright.dev/docs/intro), [setup e teardown](https://playwright.dev/docs/test-global-setup-teardown) e [GitHub Actions](https://docs.github.com/en/actions).
 
 ## URLs dos remotes
 
