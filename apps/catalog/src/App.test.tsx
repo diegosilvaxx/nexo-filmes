@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -96,6 +96,45 @@ it('espera 400ms após a última tecla e reinicia filtros e página ao buscar', 
     { page: 1, search: 'Matrix', sort: 'popular' },
     expect.any(AbortSignal),
   );
+});
+it('seleciona páginas numeradas preservando filtros, foco e limites da navegação', async () => {
+  const user = userEvent.setup();
+  mocks.movies.mockResolvedValue({ ...results, totalPages: 500, totalItems: 10_000 });
+  mount('/filmes?page=6&genreId=18&sort=rating&source=link');
+  const navigation = () =>
+    within(screen.getByRole('navigation', { name: 'Paginação do catálogo' }));
+  await screen.findByText('Clube da Luta');
+  expect(navigation().getByRole('button', { name: 'Página 6' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await user.click(navigation().getByRole('button', { name: 'Página 6' }));
+  expect(mocks.movies).toHaveBeenCalledTimes(1);
+  await user.click(navigation().getByRole('button', { name: 'Página 500' }));
+  expect(screen.getByTestId('url')).toHaveTextContent(
+    '/filmes?source=link&page=500&genreId=18&sort=rating',
+  );
+  expect(screen.getByRole('heading', { name: 'Encontre seu próximo filme.' })).toHaveFocus();
+  await screen.findByText('Clube da Luta');
+  expect(navigation().getByRole('button', { name: 'Próxima' })).toBeDisabled();
+  await user.click(navigation().getByRole('button', { name: 'Anterior' }));
+  await screen.findByText('Clube da Luta');
+  expect(navigation().getByRole('button', { name: 'Página 499' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await user.click(navigation().getByRole('button', { name: 'Página 1' }));
+  await screen.findByText('Clube da Luta');
+  expect(screen.getByTestId('url')).toHaveTextContent('/filmes?source=link&genreId=18&sort=rating');
+  expect(navigation().getByRole('button', { name: 'Anterior' })).toBeDisabled();
+});
+it('oculta a paginação quando os resultados têm somente uma página', async () => {
+  mocks.movies.mockResolvedValue({ ...results, totalPages: 1 });
+  mount();
+  await screen.findByText('Clube da Luta');
+  expect(
+    screen.queryByRole('navigation', { name: 'Paginação do catálogo' }),
+  ).not.toBeInTheDocument();
 });
 it('ignora resposta antiga quando a consulta muda e cancela a requisição anterior', async () => {
   let complete!: (value: typeof results) => void;

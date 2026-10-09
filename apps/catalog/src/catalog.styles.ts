@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Button } from '@nexo/ui';
 export const Filters = styled.div`
   display: grid;
   grid-template-columns: minmax(200px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr);
@@ -45,11 +46,53 @@ export const Pagination = styled.nav`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 8px;
   margin-top: 48px;
   font-size: 13px;
   color: ${({ theme }) => theme.colors.muted};
-  @media (max-width: 380px) {
-    gap: 10px;
+  @media (max-width: 540px) {
+    gap: 2px;
   }
+`;
+export const PaginationButton = styled(Button)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
+  border-color: transparent;
+  color: ${({ theme }) => theme.colors.muted};
+
+  &[aria-current='page'] {
+    border-bottom: 2px solid ${({ theme }) => theme.colors.focus};
+    border-radius: 0;
+    color: ${({ theme }) => theme.colors.text};
+    font-weight: 600;
+  }
+
+  @media (max-width: 540px) {
+    width: 32px;
+  }
+`;
+export const PaginationGap = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+
+  @media (max-width: 540px) {
+    width: 32px;
+  }
+`;
+export const PaginationStatus = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 `;

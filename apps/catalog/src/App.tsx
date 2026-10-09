@@ -16,7 +16,8 @@ import {
   SectionHeader,
 } from '@nexo/ui';
 import { readCatalogQuery, writeCatalogQuery } from './query';
-import { Field, FilterHelp, Filters, Pagination } from './catalog.styles';
+import { Field, FilterHelp, Filters } from './catalog.styles';
+import { CatalogPagination } from './CatalogPagination';
 
 const api = createMoviesApi();
 export function App({ standalone = false }: { standalone?: boolean }) {
@@ -71,6 +72,7 @@ export function App({ standalone = false }: { standalone?: boolean }) {
         : undefined;
   const page = movies.result?.status === 'ready' ? movies.result.data : undefined;
   const goToPage = (next: number) => {
+    if (next === query.page) return;
     setParams(writeCatalogQuery(params, { ...query, page: next }));
     heading.current?.focus();
     heading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
@@ -195,20 +197,11 @@ export function App({ standalone = false }: { standalone?: boolean }) {
             </MovieGrid>
           )}
           {page.totalPages > 1 && (
-            <Pagination aria-label="Paginação do catálogo">
-              <Button disabled={query.page <= 1} onClick={() => goToPage(query.page - 1)}>
-                Anterior
-              </Button>
-              <span>
-                Página {query.page} de {page.totalPages}
-              </span>
-              <Button
-                disabled={query.page >= page.totalPages}
-                onClick={() => goToPage(query.page + 1)}
-              >
-                Próxima
-              </Button>
-            </Pagination>
+            <CatalogPagination
+              page={query.page}
+              totalPages={page.totalPages}
+              onPageChange={goToPage}
+            />
           )}
         </>
       )}

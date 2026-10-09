@@ -139,11 +139,11 @@ Verificação local realizada em 9 de outubro de 2026:
 
 | Verificação                               | Resultado            |
 | ----------------------------------------- | -------------------- |
-| Unitários e regras de negócio             | 143 testes aprovados |
+| Unitários e regras de negócio             | 152 testes aprovados |
 | Componentes e acessibilidade no Storybook | 33 testes aprovados  |
-| E2E em desktop e mobile                   | 36 testes aprovados  |
+| E2E em desktop e mobile                   | 38 testes aprovados  |
 | Integração Docker                         | 2 testes aprovados   |
-| Cobertura de linhas                       | 93,03%               |
+| Cobertura de linhas                       | 93,29%               |
 | Arquitetura, tipos, lint e formatação     | Aprovados            |
 | Builds do portal, BFF e Storybook         | Aprovados            |
 
@@ -154,16 +154,16 @@ As imagens abaixo são capturas dos relatórios gerados pelas suítes. Os testes
 ![Relatório Playwright com os dois testes Docker aprovados e nenhuma falha](docs/images/testes-docker.png)
 
 <details>
-<summary>E2E: 36 testes aprovados em desktop e mobile</summary>
+<summary>E2E: 38 testes aprovados em desktop e mobile</summary>
 
-![Relatório Playwright com 36 testes aprovados, incluindo acessibilidade e fluxos do portal](docs/images/testes-e2e.png)
+![Relatório Playwright com 38 testes aprovados, incluindo acessibilidade e fluxos do portal](docs/images/testes-e2e.png)
 
 </details>
 
 <details>
 <summary>Cobertura das regras de negócio</summary>
 
-![Relatório de cobertura V8 com 93,03% das linhas cobertas](docs/images/cobertura.png)
+![Relatório de cobertura V8 com 93,29% das linhas cobertas](docs/images/cobertura.png)
 
 </details>
 
@@ -225,6 +225,8 @@ Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, con
 
 ## Catálogo e favoritos
 
+A paginação permite selecionar os números diretamente, com primeira e última página, setas anterior e próxima e reticências para intervalos maiores. A página atual fica sublinhada; a navegação preserva os filtros na URL.
+
 Exemplos de URLs compartilháveis: `/filmes?page=2&genreId=18&sort=rating` e `/filmes?search=Matrix`. Gênero e ordenação reiniciam a paginação. A busca usa relevância; limpe o título para habilitar gênero e ordenação. Valores inválidos da URL são normalizados, e voltar ou avançar no navegador recupera a consulta.
 
 `@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas de favoritos e avaliações. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` identifica o recurso e notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
@@ -262,7 +264,7 @@ npm run test:e2e
 
 Em Linux, utilize `npx playwright install --with-deps chromium` para instalar também as bibliotecas do sistema. Para abrir o relatório da última execução, use `npm run test:e2e:report`.
 
-A suíte executa os mesmos 18 cenários em desktop de 1440 px e celular de 360 px, totalizando 36 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+A suíte executa os mesmos 19 cenários em desktop de 1440 px e celular de 360 px, totalizando 38 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
 
 As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 

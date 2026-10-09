@@ -1,4 +1,4 @@
-import { test, expect, metric, favoriteCounter } from './fixtures';
+import { test, expect, metric, favoriteCounter, movie } from './fixtures';
 
 test('catálogo com 20 filmes, paginação, filtros e busca com debounce preservados na URL', async ({
   page,
@@ -9,9 +9,15 @@ test('catálogo com 20 filmes, paginação, filtros e busca com debounce preserv
   await expect(details).toHaveCount(20);
   await page.getByRole('button', { name: 'Próxima' }).click();
   await expect(page).toHaveURL(/page=2/);
-  await expect(page.getByText('Página 2 de 2')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Página 2', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await page.reload();
-  await expect(page.getByText('Página 2 de 2')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Página 2', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await expect(details).toHaveCount(20);
   await page.getByRole('combobox', { name: 'Gênero', exact: true }).selectOption('18');
   await expect(page).toHaveURL(/genreId=18/);
@@ -28,6 +34,58 @@ test('catálogo com 20 filmes, paginação, filtros e busca com debounce preserv
   await page.reload();
   await expect(page.getByLabel('Buscar por título')).toHaveValue('Clube');
   await expect(details).toHaveCount(1);
+});
+
+test('paginação numerada permite saltar páginas por teclado sem perder filtros ou exceder a largura', async ({
+  page,
+}, testInfo) => {
+  await page.route('**/api/movies?**', async (route) => {
+    const current = Number(new URL(route.request().url()).searchParams.get('page') ?? 1);
+    await route.fulfill({
+      json: {
+        items: Array.from({ length: 20 }, (_, index) => ({
+          ...movie,
+          id: 1000 + (current - 1) * 20 + index,
+          title: `Filme ${index + 1} da página ${current}`,
+        })),
+        page: current,
+        totalPages: 500,
+        totalItems: 10_000,
+      },
+    });
+  });
+  await page.goto('/filmes?page=6&genreId=18&sort=rating');
+  const navigation = page.getByRole('navigation', { name: 'Paginação do catálogo' });
+  await expect(navigation.getByRole('button', { name: 'Página 6', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await navigation.scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
+  await navigation.screenshot({ path: testInfo.outputPath('paginacao.png') });
+  await navigation.getByRole('button', { name: 'Página 7', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/page=7&genreId=18&sort=rating/);
+  await expect(page.getByRole('heading', { name: 'Encontre seu próximo filme.' })).toBeFocused();
+  await expect(navigation.getByRole('button', { name: 'Página 7', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await navigation.getByRole('button', { name: 'Página 500', exact: true }).click();
+  await expect(navigation.getByRole('button', { name: 'Próxima' })).toBeDisabled();
+  await expect(navigation.getByRole('button', { name: 'Página 500', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await navigation.getByRole('button', { name: 'Página 1', exact: true }).click();
+  await expect(page).toHaveURL(/\/filmes\?genreId=18&sort=rating$/);
+  await expect(navigation.getByRole('button', { name: 'Anterior' })).toBeDisabled();
 });
 
 test('favoritos, avaliação, edição, painel e exclusão persistem entre telas e recargas', async ({
