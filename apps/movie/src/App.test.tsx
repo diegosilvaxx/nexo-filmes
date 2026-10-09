@@ -74,10 +74,8 @@ it('mostra todos os dados normalizados e permite favoritar no detalhe', async ()
   ])
     expect(screen.getByText(text)).toBeVisible();
   expect(screen.getByRole('heading', { name: 'Sua avaliação' })).toBeVisible();
-  expect(document.title).toBe('Clube da Luta · Nexo Filmes');
-  await userEvent
-    .setup()
-    .click(screen.getByRole('button', { name: 'Adicionar Clube da Luta aos favoritos' }));
+  await waitFor(() => expect(document.title).toBe('Clube da Luta · Nexo Filmes'));
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Favoritar: Clube da Luta' }));
   expect(mocks.toggle).toHaveBeenCalledWith(detail);
 });
 it.each(['/filme/abc', '/filme/0', '/filme/9007199254740992'])(
@@ -155,9 +153,7 @@ it('apresenta estados vazios e isola falha na leitura das avaliações', async (
     expect(screen.getByText(text)).toBeVisible();
   await userEvent.setup().click(screen.getByRole('button', { name: 'Tentar novamente' }));
   expect(mocks.retry).toHaveBeenCalled();
-  expect(
-    screen.getByRole('button', { name: 'Adicionar Clube da Luta aos favoritos' }),
-  ).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Favoritar: Clube da Luta' })).toBeEnabled();
 });
 it('permite abrir o elenco completo sem ocultar a avaliação', async () => {
   mocks.movie.mockResolvedValue({

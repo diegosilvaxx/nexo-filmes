@@ -10,9 +10,10 @@ for (const remote of [
     await expect(page.getByRole('heading', { name: remote.heading, exact: true })).toBeVisible();
     await expect(page.getByRole('banner')).toBeVisible();
     if (remote.port === 4301)
-      await expect(
-        page.getByRole('link', { name: 'Ver detalhes de Clube da Luta', exact: true }),
-      ).toHaveAttribute('href', 'http://127.0.0.1:4300/filme/550');
+      await expect(page.getByRole('link', { name: /Clube da Luta/ })).toHaveAttribute(
+        'href',
+        'http://127.0.0.1:4300/filme/550',
+      );
     if (remote.port === 4303) {
       await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 0 favoritos');
       await expect(
@@ -37,5 +38,5 @@ test('falha do catálogo fica isolada e o remote recupera pelo botão de nova te
   ).toBeVisible();
   await context.unroute(entry);
   await content.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
-  await expect(page.getByRole('link', { name: /^Ver detalhes de/ })).toHaveCount(20);
+  await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
 });

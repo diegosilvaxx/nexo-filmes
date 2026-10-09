@@ -84,7 +84,9 @@ it('mantém os favoritos disponíveis quando as notas falham e permite tentar a 
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Não foi possível carregar as avaliações.',
   );
-  expect(screen.getByRole('button', { name: 'Remover Clube da Luta dos favoritos' })).toBeEnabled();
+  expect(
+    screen.getByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos' }),
+  ).toBeEnabled();
   await userEvent.setup().click(screen.getByRole('button', { name: 'Tentar novamente' }));
   expect(await screen.findByText('Sua nota: 9,0')).toBeVisible();
 });
@@ -107,12 +109,14 @@ it('compartilha o estado da lista e contador e remove imediatamente durante a gr
   );
   mount();
   expect(
-    await screen.findByRole('button', { name: 'Remover Clube da Luta dos favoritos' }),
+    await screen.findByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos' }),
   ).toBeEnabled();
   expect(screen.getByRole('link', { name: 'Favoritos 1 favoritos' })).toBeVisible();
   await userEvent
     .setup()
-    .click(screen.getByRole('button', { name: 'Remover Clube da Luta dos favoritos' }));
+    .click(
+      screen.getByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos' }),
+    );
   expect(screen.getByRole('link', { name: 'Favoritos 0 favoritos' })).toBeVisible();
   expect(screen.queryByText('Clube da Luta')).not.toBeInTheDocument();
   expect(screen.getByText('Salvando favoritos…')).toBeVisible();
@@ -124,12 +128,16 @@ it('compartilha o estado da lista e contador e remove imediatamente durante a gr
 it('restaura filme e contador e mostra erro quando a remoção falha', async () => {
   mocks.write.mockRejectedValue(new Error('failure'));
   mount();
-  await userEvent
-    .setup()
-    .click(await screen.findByRole('button', { name: 'Remover Clube da Luta dos favoritos' }));
+  await userEvent.setup().click(
+    await screen.findByRole('button', {
+      name: 'Favoritado: Clube da Luta. Remover dos favoritos',
+    }),
+  );
   expect(await screen.findByRole('alert')).toHaveTextContent('A alteração foi desfeita.');
   expect(screen.getByRole('link', { name: 'Favoritos 1 favoritos' })).toBeVisible();
-  expect(screen.getByRole('button', { name: 'Remover Clube da Luta dos favoritos' })).toBeEnabled();
+  expect(
+    screen.getByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos' }),
+  ).toBeEnabled();
 });
 it('recupera falha de leitura pelo botão de nova tentativa sem apagar dados', async () => {
   mocks.list.mockRejectedValueOnce(new Error('blocked')).mockResolvedValue([]);

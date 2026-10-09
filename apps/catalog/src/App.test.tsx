@@ -58,13 +58,14 @@ afterEach(() => {
 it('exibe dados normalizados, navega pelo gênero e paginação com foco no título', async () => {
   const user = userEvent.setup();
   mount();
-  expect(
-    await screen.findByRole('link', { name: 'Ver detalhes de Clube da Luta' }),
-  ).toHaveAttribute('href', '/filme/550');
+  expect(await screen.findByRole('link', { name: /Clube da Luta/ })).toHaveAttribute(
+    'href',
+    '/filme/550',
+  );
   await user.selectOptions(screen.getByLabelText('Gênero'), '18');
-  await screen.findByRole('link', { name: 'Ver detalhes de Clube da Luta' });
+  await screen.findByRole('link', { name: /Clube da Luta/ });
   await user.selectOptions(screen.getByLabelText('Ordenar por'), 'rating');
-  await screen.findByRole('link', { name: 'Ver detalhes de Clube da Luta' });
+  await screen.findByRole('link', { name: /Clube da Luta/ });
   await user.click(screen.getByRole('button', { name: 'Próxima' }));
   expect(screen.getByTestId('url')).toHaveTextContent('/filmes?page=2&genreId=18&sort=rating');
   expect(screen.getByRole('heading', { name: 'Encontre seu próximo filme.' })).toHaveFocus();
@@ -135,7 +136,7 @@ it('permite limpar busca sem resultados e favoritar pelo contrato do filme', asy
   await screen.findByText('Clube da Luta');
   expect(screen.getByRole('searchbox')).toHaveValue('');
   expect(screen.getByLabelText('Gênero')).toBeEnabled();
-  await user.click(screen.getByRole('button', { name: 'Adicionar Clube da Luta aos favoritos' }));
+  await user.click(screen.getByRole('button', { name: 'Favoritar: Clube da Luta' }));
   expect(mocks.toggleFavorite).toHaveBeenCalledWith(summary);
 });
 it('apresenta 429, respeita Retry-After e repete apenas por ação do usuário', async () => {

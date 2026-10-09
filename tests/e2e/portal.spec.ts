@@ -5,7 +5,7 @@ test('catálogo com 20 filmes, paginação, filtros e busca com debounce preserv
   api,
 }) => {
   await page.goto('/filmes');
-  const details = page.getByRole('link', { name: /^Ver detalhes de/ });
+  const details = page.getByRole('article').getByRole('link');
   await expect(details).toHaveCount(20);
   await page.getByRole('button', { name: 'Próxima' }).click();
   await expect(page).toHaveURL(/page=2/);
@@ -34,14 +34,12 @@ test('favoritos, avaliação, edição, painel e exclusão persistem entre telas
   page,
 }) => {
   await page.goto('/filmes');
-  await page
-    .getByRole('button', { name: 'Adicionar Clube da Luta aos favoritos', exact: true })
-    .click();
+  await page.getByRole('button', { name: 'Favoritar: Clube da Luta', exact: true }).click();
   await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 1 favoritos');
   await expect(
-    page.getByRole('button', { name: 'Remover Clube da Luta dos favoritos' }),
+    page.getByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos' }),
   ).toBeEnabled();
-  await page.getByRole('link', { name: 'Ver detalhes de Clube da Luta', exact: true }).click();
+  await page.getByRole('link', { name: /Clube da Luta/ }).click();
   await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
   await expect(page.getByText('139 min', { exact: true })).toBeVisible();
   await expect(page.getByText('David Fincher', { exact: true })).toBeVisible();
@@ -54,7 +52,7 @@ test('favoritos, avaliação, edição, painel e exclusão persistem entre telas
   await expect(page.getByText('Sua nota: 8,5', { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByText('Sua nota: 8,5', { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: 'Ver detalhes de Clube da Luta', exact: true }).click();
+  await page.getByRole('link', { name: /Clube da Luta/ }).click();
   await expect(page.getByLabel('Comentário', { exact: false })).toHaveValue('Vale a pena rever.');
   await page.getByLabel('Sua nota', { exact: false }).fill('9.5');
   await page.getByRole('button', { name: 'Atualizar avaliação', exact: true }).click();
@@ -66,7 +64,7 @@ test('favoritos, avaliação, edição, painel e exclusão persistem entre telas
   await expect(metric(page, 'Gênero mais frequente')).toHaveText(/^Drama/);
   await page.getByRole('link', { name: 'Ver favoritos', exact: true }).click();
   await page
-    .getByRole('button', { name: 'Remover Clube da Luta dos favoritos', exact: true })
+    .getByRole('button', { name: 'Favoritado: Clube da Luta. Remover dos favoritos', exact: true })
     .click();
   await expect(page.getByText('Você ainda não tem filmes favoritos.')).toBeVisible();
   await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 0 favoritos');
@@ -123,7 +121,7 @@ test('escritas no ID 13 falham, desfazem o favorito e mantêm o rascunho da aval
 }) => {
   await page.goto('/filme/13');
   const favorite = page.getByRole('button', {
-    name: 'Adicionar Forrest Gump aos favoritos',
+    name: 'Favoritar: Forrest Gump',
     exact: true,
   });
   await favorite.click();
@@ -152,9 +150,7 @@ test('outra aba recebe favorito e avaliação sem recarregar o painel', async ({
   await expect(metric(page, 'Filmes avaliados')).toHaveText(/^0/);
   const details = await context.newPage();
   await details.goto('/filme/550');
-  await details
-    .getByRole('button', { name: 'Adicionar Clube da Luta aos favoritos', exact: true })
-    .click();
+  await details.getByRole('button', { name: 'Favoritar: Clube da Luta', exact: true }).click();
   await details.getByLabel('Sua nota', { exact: false }).fill('8.5');
   await details.getByRole('button', { name: 'Salvar avaliação', exact: true }).click();
   await expect(details.getByText('Avaliação salva.', { exact: true })).toBeVisible();
@@ -177,7 +173,7 @@ for (const code of ['RATE_LIMITED', 'UPSTREAM_UNAVAILABLE'] as const) {
     await expect(page.getByRole('alert')).toContainText('Tente novamente.');
     await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 0 favoritos');
     await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
-    await expect(page.getByRole('link', { name: /^Ver detalhes de/ })).toHaveCount(20);
+    await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
   });
 }
 
@@ -188,14 +184,14 @@ test('catálogo apresenta carregamento, busca vazia e recuperação ao limpar fi
   api.delayMs = 500;
   await page.goto('/filmes');
   await expect(page.getByText('Carregando filmes…', { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: /^Ver detalhes de/ })).toHaveCount(20);
+  await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
   api.delayMs = 0;
   await page.getByLabel('Buscar por título').fill('Título inexistente');
   await expect(
     page.getByText('Nenhum filme encontrado. Experimente outro título ou gênero.'),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Limpar filtros', exact: true }).click();
-  await expect(page.getByRole('link', { name: /^Ver detalhes de/ })).toHaveCount(20);
+  await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
   await expect(page.getByLabel('Buscar por título')).toHaveValue('');
 });
 
@@ -206,7 +202,7 @@ for (const path of ['/filme/abc', '/filme/99999', '/rota-inexistente']) {
       page.getByRole('heading', { name: 'Página não encontrada', exact: true }),
     ).toBeVisible();
     await page.getByRole('banner').getByRole('link', { name: 'Filmes', exact: true }).click();
-    await expect(page.getByRole('link', { name: /^Ver detalhes de/ })).toHaveCount(20);
+    await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
   });
 }
 

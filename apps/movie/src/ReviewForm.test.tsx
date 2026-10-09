@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useSyncExternalStore } from 'react';
 import { expect, it, vi } from 'vitest';
@@ -7,6 +7,43 @@ import { UIProvider } from '@nexo/ui';
 import type { Review } from '@nexo/contracts';
 import { ReviewForm } from './ReviewForm';
 const saved: Review = { movieId: 550, rating: 8, comment: 'Original' };
+it('associa cada rótulo ao campo correto quando há dois formulários na mesma página', async () => {
+  const firstSave = vi.fn().mockResolvedValue(true);
+  const secondSave = vi.fn().mockResolvedValue(true);
+  render(
+    <UIProvider>
+      <div role="group" aria-label="Primeira avaliação">
+        <ReviewForm
+          movieId={550}
+          review={undefined}
+          pending={false}
+          saveReview={firstSave}
+          deleteReview={vi.fn()}
+        />
+      </div>
+      <div role="group" aria-label="Segunda avaliação">
+        <ReviewForm
+          movieId={551}
+          review={undefined}
+          pending={false}
+          saveReview={secondSave}
+          deleteReview={vi.fn()}
+        />
+      </div>
+    </UIProvider>,
+  );
+  const second = within(screen.getByRole('group', { name: 'Segunda avaliação' }));
+  const user = userEvent.setup();
+  await user.click(second.getByText(/^Sua nota/));
+  expect(second.getByRole('spinbutton')).toHaveFocus();
+  await user.keyboard('8.5');
+  await user.click(second.getByRole('button', { name: 'Salvar avaliação' }));
+  expect(secondSave).toHaveBeenCalledWith(551, { rating: 8.5, comment: '' });
+  expect(firstSave).not.toHaveBeenCalled();
+  expect(
+    within(screen.getByRole('group', { name: 'Primeira avaliação' })).getByRole('spinbutton'),
+  ).toHaveValue(null);
+});
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (error: Error) => void;

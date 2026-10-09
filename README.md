@@ -59,20 +59,23 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 
 ## Comandos
 
-| Comando                   | Descrição                                          |
-| ------------------------- | -------------------------------------------------- |
-| `npm run check`           | Arquitetura, tipos, lint, formato, testes e builds |
-| `npm run architecture`    | Verificação das importações entre aplicações       |
-| `npm run typecheck`       | Verificação de tipos sem emitir arquivos           |
-| `npm run lint`            | ESLint sem avisos                                  |
-| `npm run format`          | Formatação com Prettier                            |
-| `npm run build`           | Builds do BFF e das quatro aplicações em `dist/`   |
-| `npm run preview`         | Prévia dos builds e BFF com ambiente de produção   |
-| `npm run start:bff`       | Executa o build do BFF                             |
-| `npm test`                | Testes com Vitest                                  |
-| `npm run test:coverage`   | Relatório de cobertura V8                          |
-| `npm run test:e2e`        | Testes de navegador com Playwright                 |
-| `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador      |
+| Comando                   | Descrição                                            |
+| ------------------------- | ---------------------------------------------------- |
+| `npm run check`           | Arquitetura, tipos, lint, formato, testes e builds   |
+| `npm run architecture`    | Verificação das importações entre aplicações         |
+| `npm run typecheck`       | Verificação de tipos sem emitir arquivos             |
+| `npm run lint`            | ESLint sem avisos                                    |
+| `npm run format`          | Formatação com Prettier                              |
+| `npm run build`           | Builds do BFF e das quatro aplicações em `dist/`     |
+| `npm run preview`         | Prévia dos builds e BFF com ambiente de produção     |
+| `npm run start:bff`       | Executa o build do BFF                               |
+| `npm test`                | Testes com Vitest                                    |
+| `npm run test:coverage`   | Relatório de cobertura V8                            |
+| `npm run test:e2e`        | Testes de navegador com Playwright                   |
+| `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador        |
+| `npm run storybook`       | Catálogo interativo de componentes na porta 6006     |
+| `npm run build:storybook` | Build estático da documentação de componentes        |
+| `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
 
 ## Estado atual
 
@@ -130,6 +133,33 @@ No modo `e2e`, o repositório real mantém atraso fixo de 500 ms e falha nas esc
 O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
 
 Referências: [Playwright](https://playwright.dev/docs/intro), [setup e teardown](https://playwright.dev/docs/test-global-setup-teardown) e [GitHub Actions](https://docs.github.com/en/actions).
+
+## Storybook
+
+Na raiz, após instalar as dependências:
+
+```bash
+npm run storybook
+```
+
+Abra [http://127.0.0.1:6006](http://127.0.0.1:6006). A porta precisa estar livre; `Ctrl+C` encerra o servidor. O Storybook funciona sem iniciar o portal ou o BFF e sem credenciais da TMDB.
+
+São 33 exemplos em sete grupos: card de filme, botão de favorito, carregamento, erro de requisição, página 404, layout do portal e formulário de avaliação. Os exemplos utilizam os componentes reais, o tema de styled-components e um router em memória. Os dados e o pôster demonstrativo são locais; as ações do formulário não gravam no `localStorage`.
+
+Em **Documentação**, consulte a descrição, as propriedades e o código de uso de cada componente. Em **Controls**, altere os valores disponíveis para conferir seus estados. A ferramenta de viewport oferece desktop de 1440 px e celular de 360 px. O exemplo **Alternância** do favorito responde aos cliques; o formulário permite salvar, editar e excluir uma avaliação local.
+
+Os exemplos de interação verificam os callbacks, a validação Zod, o foco no primeiro erro, a preservação do rascunho e a navegação por teclado. O painel **Accessibility** apresenta as verificações com axe. Para executar as interações e as verificações de acessibilidade automaticamente:
+
+```bash
+npx playwright install chromium
+npm run test:storybook
+```
+
+O Chromium é compartilhado com os testes E2E e só precisa ser instalado uma vez. Não é necessário manter o servidor Storybook aberto para executar esses testes. No painel lateral **Component tests**, marque **Accessibility** e clique em **Run tests** para executar as duas verificações pela interface. As verificações de acessibilidade falham quando encontram uma violação nos exemplos; elas complementam a revisão manual por teclado e com leitor de tela.
+
+`npm run build:storybook` gera `storybook-static/`, pronto para servir como site estático. Esse build e os testes de componentes também são verificados pelo CI; o build fica disponível como artefato por sete dias. As dependências de Storybook ficam em desenvolvimento e não entram nos builds do portal.
+
+Referências: [React com Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite), [testes de interação](https://storybook.js.org/docs/writing-tests/interaction-testing) e [acessibilidade](https://storybook.js.org/docs/writing-tests/accessibility-testing).
 
 ## URLs dos remotes
 

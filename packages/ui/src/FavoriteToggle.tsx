@@ -17,7 +17,11 @@ export function FavoriteToggle({
       type="button"
       aria-pressed={favorite}
       aria-busy={pending}
-      aria-label={`${favorite ? 'Remover' : 'Adicionar'} ${title} ${favorite ? 'dos' : 'aos'} favoritos`}
+      aria-label={
+        pending
+          ? `Salvando…: ${title}`
+          : `${favorite ? 'Favoritado' : 'Favoritar'}: ${title}${favorite ? '. Remover dos favoritos' : ''}`
+      }
       disabled={disabled || pending}
       onClick={onToggle}
     >

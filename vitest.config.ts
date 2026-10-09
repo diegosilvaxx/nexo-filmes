@@ -3,20 +3,29 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [react()],
   test: {
-    pool: 'threads',
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-    include: ['apps/**/*.test.{ts,tsx}', 'packages/**/*.test.{ts,tsx}'],
-    clearMocks: true,
-    restoreMocks: true,
+    projects: [
+      {
+        extends: true,
+        plugins: [react()],
+        test: {
+          name: 'unit',
+          pool: 'threads',
+          environment: 'jsdom',
+          setupFiles: ['./tests/setup.ts'],
+          include: ['apps/**/*.test.{ts,tsx}', 'packages/**/*.test.{ts,tsx}'],
+          clearMocks: true,
+          restoreMocks: true,
+        },
+      },
+      './vitest.storybook.config.ts',
+    ],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'html', 'lcov'],
       include: ['packages/*/src/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
-      exclude: ['**/*.test.{ts,tsx}', '**/main.tsx', '**/vite-env.d.ts'],
+      exclude: ['**/*.test.{ts,tsx}', '**/*.stories.{ts,tsx}', '**/main.tsx', '**/vite-env.d.ts'],
       thresholds: {
         'apps/area/src/statistics.ts': { lines: 70 },
         'apps/movie/src/ReviewForm.tsx': { lines: 70 },

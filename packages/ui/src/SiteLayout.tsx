@@ -37,7 +37,7 @@ export function SiteLayout({
       <SkipLink href="#content">Ir para o conteúdo</SkipLink>
       <Header>
         <Wordmark to={homePath} aria-label="Nexo Filmes, início">
-          Nexo<BrandSubtitle>FILMES</BrandSubtitle>
+          Nexo <BrandSubtitle>FILMES</BrandSubtitle>
         </Wordmark>
         <Navigation aria-label="Navegação principal">
           {navigation.map((item) => (

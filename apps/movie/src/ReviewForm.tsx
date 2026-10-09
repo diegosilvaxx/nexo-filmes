@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type SubmitEvent } from 'react';
+import { useEffect, useId, useRef, useState, type SubmitEvent } from 'react';
 import { reviewInputSchema, type Review, type ReviewInput } from '@nexo/contracts';
 import { Button } from '@nexo/ui';
 import { Actions, FieldError, Form, FormField, FormStatus, Help } from './movie.styles';
@@ -20,6 +20,7 @@ export function ReviewForm({
   saveReview,
   deleteReview,
 }: ReviewFormProps) {
+  const id = useId();
   const source = JSON.stringify(review ?? null);
   const [fields, setFields] = useState({ ...values(review), source, dirty: false });
   if (!fields.dirty && fields.source !== source)
@@ -89,11 +90,11 @@ export function ReviewForm({
   return (
     <Form noValidate onSubmit={(event) => void save(event)} aria-busy={pending}>
       <FormField>
-        <label htmlFor="review-rating">
+        <label htmlFor={`${id}-rating`}>
           Sua nota <span aria-hidden="true">*</span>
         </label>
         <input
-          id="review-rating"
+          id={`${id}-rating`}
           ref={rating}
           type="number"
           inputMode="decimal"
@@ -104,7 +105,7 @@ export function ReviewForm({
           value={fields.rating}
           disabled={pending}
           aria-invalid={Boolean(errors.rating)}
-          aria-describedby={`rating-help${errors.rating ? ' rating-error' : ''}`}
+          aria-describedby={`${id}-rating-help${errors.rating ? ` ${id}-rating-error` : ''}`}
           onChange={(event) => {
             const value = event.currentTarget.value;
             setFields((current) => ({
@@ -116,30 +117,30 @@ export function ReviewForm({
             setMessage(undefined);
           }}
         />
-        <Help id="rating-help">Obrigatória. De 0,5 a 10, em passos de 0,5.</Help>
-        {errors.rating && <FieldError id="rating-error">{errors.rating}</FieldError>}
+        <Help id={`${id}-rating-help`}>Obrigatória. De 0,5 a 10, em passos de 0,5.</Help>
+        {errors.rating && <FieldError id={`${id}-rating-error`}>{errors.rating}</FieldError>}
       </FormField>
       <FormField>
-        <label htmlFor="review-comment">
+        <label htmlFor={`${id}-comment`}>
           Comentário <span>(opcional)</span>
         </label>
         <textarea
-          id="review-comment"
+          id={`${id}-comment`}
           ref={comment}
           rows={5}
           value={fields.comment}
           disabled={pending}
           aria-invalid={Boolean(errors.comment)}
-          aria-describedby={`comment-help${errors.comment ? ' comment-error' : ''}`}
+          aria-describedby={`${id}-comment-help${errors.comment ? ` ${id}-comment-error` : ''}`}
           onChange={(event) => {
             setFields({ ...fields, comment: event.target.value, dirty: true });
             setErrors((current) => ({ ...current, comment: '' }));
             setMessage(undefined);
           }}
         />
-        <Help id="comment-help">{fields.comment.length}/500 caracteres.</Help>
+        <Help id={`${id}-comment-help`}>{fields.comment.length}/500 caracteres.</Help>
         {errors.comment && (
-          <FieldError id="comment-error" role="alert">
+          <FieldError id={`${id}-comment-error`} role="alert">
             {errors.comment}
           </FieldError>
         )}

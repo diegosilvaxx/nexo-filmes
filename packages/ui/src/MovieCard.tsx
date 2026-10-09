@@ -34,10 +34,7 @@ export function MovieCard({
   const [failedPoster, setFailedPoster] = useState(false);
   return (
     <MovieArticle>
-      <MovieLink
-        to={detailsPath ?? `/filme/${movie.id}`}
-        aria-label={`Ver detalhes de ${movie.title}`}
-      >
+      <MovieLink to={detailsPath ?? `/filme/${movie.id}`}>
         <Poster>
           {movie.posterUrl && !failedPoster ? (
             <img
