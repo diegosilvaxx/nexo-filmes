@@ -102,6 +102,10 @@ export const Main = styled.main`
   padding: 72px 0;
   flex: 1;
 
+  &:focus {
+    outline: none;
+  }
+
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     padding: 48px 0;
   }

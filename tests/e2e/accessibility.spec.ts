@@ -59,11 +59,15 @@ test('telas completas não apresentam violações de acessibilidade', async ({ p
 test('atalho para o conteúdo e foco visível funcionam pelo teclado', async ({ page }, testInfo) => {
   await page.goto('/filmes');
   await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
+  const main = page.getByRole('main');
+  await expect(main).toBeFocused();
+  await expect(main).toHaveCSS('outline-style', 'none');
   const skip = page.getByRole('link', { name: 'Ir para o conteúdo', exact: true });
   await skip.focus();
   await expect(skip).toBeVisible();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('main')).toBeFocused();
+  await expect(main).toBeFocused();
+  await expect(main).toHaveCSS('outline-style', 'none');
   await skip.focus();
   await page.keyboard.press('Tab');
   const home = page.getByRole('link', { name: 'Nexo Filmes, início', exact: true });
