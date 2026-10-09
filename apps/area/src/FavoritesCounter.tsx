@@ -18,7 +18,7 @@ export function FavoritesCounter() {
   if (status === 'error')
     return (
       <Retry
-        aria-label="Tentar carregar o contador de favoritos novamente"
+        aria-label="Favoritos · tentar novamente: carregar o contador de favoritos"
         onClick={() => void retry()}
       >
         Favoritos · tentar novamente

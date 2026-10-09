@@ -77,7 +77,7 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 | `npm run build:storybook` | Build estático da documentação de componentes        |
 | `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
 
-## Estado atual
+## Funcionamento
 
 O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
@@ -124,13 +124,15 @@ npm run test:e2e
 
 Em Linux, utilize `npx playwright install --with-deps chromium` para instalar também as bibliotecas do sistema. Para abrir o relatório da última execução, use `npm run test:e2e:report`.
 
-A suíte executa os mesmos 16 cenários em desktop de 1440 px e celular de 360 px, totalizando 32 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+A suíte executa os mesmos 18 cenários em desktop de 1440 px e celular de 360 px, totalizando 36 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+
+As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 
 O setup gera builds reais do Shell e dos remotes em `dist/e2e/`, inicia prévias nas portas 4300 a 4303 e encerra esses servidores ao terminar. As portas precisam estar livres. Os builds normais e as portas de desenvolvimento são preservados. As chamadas de API recebem respostas locais simuladas, sem iniciar o BFF ou exigir credenciais da TMDB. Cada teste utiliza um contexto de navegador com armazenamento isolado e grava dados pelos controles da interface.
 
 No modo `e2e`, o repositório real mantém atraso fixo de 500 ms e falha nas escritas de IDs terminados em `13`, permitindo verificar estados otimistas, persistência e reversão. Falhas geram screenshot, vídeo e trace; o relatório HTML fica em `playwright-report/` e os arquivos de diagnóstico em `test-results/`. Esses diretórios são ignorados pelo Git.
 
-O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
+O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e os builds do portal e do Storybook; após essa aprovação, executa os testes de componentes e os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
 
 Referências: [Playwright](https://playwright.dev/docs/intro), [setup e teardown](https://playwright.dev/docs/test-global-setup-teardown) e [GitHub Actions](https://docs.github.com/en/actions).
 
@@ -180,6 +182,10 @@ Em desenvolvimento, o arquivo está em `apps/shell/public/runtime-config.json`. 
 Uma nova tentativa busca novamente a configuração e invalida a entrada do remote. Em hospedagem estática, sirva o JSON sem cache, habilite CORS para os arquivos dos remotes e configure fallback de navegação para `index.html` em cada aplicação.
 
 Para verificar os builds localmente, execute `npm run build` e `npm run preview`.
+
+## Requisitos e verificação
+
+O [guia de verificação](docs/validation.md) relaciona os requisitos à implementação e descreve os cenários manuais, incluindo as falhas de gravação nos IDs terminados em `13`.
 
 ## Escopo funcional
 
