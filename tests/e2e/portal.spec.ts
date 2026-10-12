@@ -4,6 +4,7 @@ test('catálogo com 20 filmes, paginação, filtros e busca com debounce preserv
   page,
   api,
 }) => {
+  await page.clock.install({ time: new Date('2026-10-12T08:00:00Z') });
   await page.goto('/filmes');
   const details = page.getByRole('article').getByRole('link');
   await expect(details).toHaveCount(20);
@@ -24,13 +25,19 @@ test('catálogo com 20 filmes, paginação, filtros e busca com debounce preserv
   await expect(page).not.toHaveURL(/page=2/);
   await page.getByRole('combobox', { name: 'Ordenar por', exact: true }).selectOption('title');
   await expect(page).toHaveURL(/sort=title/);
+  await expect(details).toHaveCount(20);
+  await page.clock.pauseAt(new Date('2026-10-12T08:01:00Z'));
   await page.getByLabel('Buscar por título').pressSequentially('Clube', { delay: 40 });
+  await page.clock.runFor(399);
+  expect(api.requests.filter((url) => Boolean(url.searchParams.get('search')))).toHaveLength(0);
+  await page.clock.runFor(1);
   await expect(page).toHaveURL(/search=Clube/);
   await expect(details).toHaveCount(1);
   await expect(page.getByRole('combobox', { name: 'Gênero', exact: true })).toBeDisabled();
   await expect(page.getByRole('combobox', { name: 'Ordenar por', exact: true })).toBeDisabled();
   expect(api.requests.filter((url) => url.searchParams.get('search') === 'Clube')).toHaveLength(1);
   expect(api.requests.filter((url) => Boolean(url.searchParams.get('search')))).toHaveLength(1);
+  await page.clock.resume();
   await page.reload();
   await expect(page.getByLabel('Buscar por título')).toHaveValue('Clube');
   await expect(details).toHaveCount(1);

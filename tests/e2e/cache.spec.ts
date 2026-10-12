@@ -18,11 +18,15 @@ test('catálogo, filtros, busca e detalhes reutilizam o cache durante a navegaç
   expect(requests('/api/genres')).toBe(1);
   expect(requests('/api/movies')).toBe(1);
   await details();
-  await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Clube da Luta', exact: true }),
+  ).toBeVisible();
   await home();
   await expect(cards).toHaveCount(20);
   await details();
-  await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Clube da Luta', exact: true }),
+  ).toBeVisible();
   expect(requests('/api/movies/550')).toBe(1);
   await home();
   await expect(cards).toHaveCount(20);
@@ -68,7 +72,9 @@ test('renova catálogo e detalhes após seus prazos de validade', async ({ page,
       .click();
   await expect(cards).toHaveCount(20);
   await details();
-  await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Clube da Luta', exact: true }),
+  ).toBeVisible();
 
   await page.clock.setFixedTime(initialTime + 120_000);
   await home();
@@ -76,14 +82,18 @@ test('renova catálogo e detalhes após seus prazos de validade', async ({ page,
   expect(requests('/api/movies')).toBe(2);
   expect(requests('/api/genres')).toBe(1);
   await details();
-  await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Clube da Luta', exact: true }),
+  ).toBeVisible();
   expect(requests('/api/movies/550')).toBe(1);
 
   await page.clock.setFixedTime(initialTime + 300_000);
   await home();
   await expect(cards).toHaveCount(20);
   await details();
-  await expect(page.getByRole('heading', { name: 'Clube da Luta', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Clube da Luta', exact: true }),
+  ).toBeVisible();
   expect(requests('/api/movies/550')).toBe(2);
   expect(requests('/api/genres')).toBe(1);
 });
