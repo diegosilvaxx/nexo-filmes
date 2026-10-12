@@ -54,7 +54,7 @@ export const Navigation = styled.nav`
   margin-left: auto;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    gap: 16px;
+    gap: 10px;
   }
 `;
 

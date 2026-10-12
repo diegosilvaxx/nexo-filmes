@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const Retry = styled.button`
   background: transparent;
   color: inherit;
-  border: 1px solid #ffffff24;
+  border: 1px solid ${({ theme }) => theme.colors.controlBorder};
   border-radius: 4px;
   min-height: 36px;
   cursor: pointer;

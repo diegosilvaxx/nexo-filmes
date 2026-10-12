@@ -13,7 +13,7 @@ export const DetailPoster = styled.div`
   aspect-ratio: 2 / 3;
   border-radius: 10px;
   overflow: hidden;
-  background: #202026;
+  background: ${({ theme }) => theme.colors.poster};
   display: grid;
   place-items: center;
   font-size: 13px;
@@ -131,8 +131,8 @@ export const FormField = styled.div`
   }
   input,
   textarea {
-    background: #1b1b20;
-    border: 1px solid #ffffff24;
+    background: ${({ theme }) => theme.colors.surface};
+    border: 1px solid ${({ theme }) => theme.colors.controlBorder};
     border-radius: 6px;
     color: ${({ theme }) => theme.colors.text};
     font: inherit;
@@ -150,7 +150,7 @@ export const FormField = styled.div`
     line-height: 1.6;
   }
   [aria-invalid='true'] {
-    border-color: #d6a2a2;
+    border-color: ${({ theme }) => theme.colors.errorBorder};
   }
   :disabled {
     opacity: 0.65;
@@ -163,7 +163,7 @@ export const Help = styled.p`
   margin: 8px 0 0;
 `;
 export const FieldError = styled.p`
-  color: #e3aaaa;
+  color: ${({ theme }) => theme.colors.error};
   font-size: 13px;
   line-height: 1.6;
   margin: 8px 0 0;

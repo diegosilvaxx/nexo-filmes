@@ -16,7 +16,7 @@ export const MetricCard = styled.div`
   padding: 24px;
   border: 1px solid ${({ theme }) => theme.colors.badgeBorder};
   border-radius: 10px;
-  background: #1b1b20;
+  background: ${({ theme }) => theme.colors.surface};
   min-width: 0;
   dt {
     color: ${({ theme }) => theme.colors.muted};

@@ -22,6 +22,7 @@ Favoritos e avaliações passam pelo repositório assíncrono; as aplicações n
 | Diferencial           | Local de verificação                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | Ordenação             | Seletor do catálogo e parâmetro `sort` na URL                                        |
+| Tema claro e escuro   | Botão de sol/lua no cabeçalho; preferência preservada após recarga e entre abas      |
 | Exclusão de avaliação | Botão no formulário de uma avaliação existente                                       |
 | Painel pessoal        | `/painel`, incluindo média com uma casa decimal e desempate alfabético de gênero     |
 | E2E                   | `npm run test:e2e`                                                                   |
@@ -66,6 +67,8 @@ Os relatórios Docker ficam em `playwright-report-docker/` e os diagnósticos em
 Os relatórios ficam em `coverage/` e `playwright-report/`; screenshots, vídeos e traces de falhas ficam em `test-results/`. Esses diretórios são ignorados pelo Git. Para abrir o relatório de navegador, use `npm run test:e2e:report`.
 
 ## Verificação manual
+
+Para verificar os temas, alterne pelo botão do cabeçalho em cada tela, recarregue e confirme a preferência em outra aba da mesma origem. Durante a edição de uma avaliação, a troca deve preservar a nota e o comentário digitados. Confira os campos, mensagens de erro, favoritos, painel e navegação por teclado nos dois temas.
 
 Com o `.env` configurado e `npm run dev` em execução, abra `http://127.0.0.1:4100`.
 

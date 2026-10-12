@@ -5,9 +5,26 @@ import { UIProvider } from '../packages/ui/src/UIProvider';
 
 const preview: Preview = {
   tags: ['autodocs'],
+  globalTypes: {
+    theme: {
+      description: 'Tema do portal',
+      toolbar: {
+        icon: 'circlehollow',
+        items: [
+          { value: 'dark', title: 'Escuro' },
+          { value: 'light', title: 'Claro' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: { theme: 'dark' },
   decorators: [
     (Story, context) => (
-      <UIProvider>
+      <UIProvider
+        key={context.globals.theme}
+        initialMode={context.globals.theme === 'light' ? 'light' : 'dark'}
+      >
         <MemoryRouter initialEntries={[context.parameters.initialPath ?? '/filmes']}>
           <Story />
         </MemoryRouter>

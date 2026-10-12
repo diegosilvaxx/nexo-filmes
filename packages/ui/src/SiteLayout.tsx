@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { NavigationItem } from '@nexo/contracts';
+import { ThemeToggle } from './ThemeToggle';
 import {
   BrandSubtitle,
   Footer,
@@ -46,6 +47,7 @@ export function SiteLayout({
             </NavigationLink>
           ))}
           {headerSlot}
+          <ThemeToggle />
         </Navigation>
       </Header>
       <Main id="content" tabIndex={-1}>

@@ -33,7 +33,7 @@ export const Poster = styled.div`
   aspect-ratio: 2 / 3;
   overflow: hidden;
   border-radius: 8px;
-  background: #202026;
+  background: ${({ theme }) => theme.colors.poster};
   display: grid;
   place-items: center;
   color: ${({ theme }) => theme.colors.muted};
@@ -65,7 +65,7 @@ export const MovieMeta = styled.div`
   color: ${({ theme }) => theme.colors.muted};
 `;
 export const Rating = styled.span`
-  color: #dccb9c;
+  color: ${({ theme }) => theme.colors.rating};
 `;
 export const MovieGenres = styled.p`
   font-size: 12px;
@@ -75,7 +75,7 @@ export const MovieGenres = styled.p`
   margin: 8px 0 12px;
 `;
 export const Button = styled.button`
-  border: 1px solid #ffffff24;
+  border: 1px solid ${({ theme }) => theme.colors.controlBorder};
   border-radius: 6px;
   padding: 10px 14px;
   min-height: 44px;
@@ -84,8 +84,8 @@ export const Button = styled.button`
   cursor: pointer;
   font-size: 13px;
   &:hover:not(:disabled) {
-    background: #ffffff08;
-    border-color: #ffffff50;
+    background: ${({ theme }) => theme.colors.hoverBackground};
+    border-color: ${({ theme }) => theme.colors.hoverBorder};
   }
   &:disabled {
     cursor: default;
@@ -100,15 +100,15 @@ export const FavoriteButton = styled(Button)`
   gap: 7px;
   padding: 8px;
   &[aria-pressed='true'] {
-    color: #c9badd;
-    border-color: #b8accf55;
-    background: #b8accf09;
+    color: ${({ theme }) => theme.colors.selected};
+    border-color: ${({ theme }) => theme.colors.selectedBorder};
+    background: ${({ theme }) => theme.colors.selectedBackground};
   }
 `;
 export const Notice = styled.div`
   padding: 20px;
   margin: 24px 0;
-  border: 1px solid #ffffff20;
+  border: 1px solid ${({ theme }) => theme.colors.noticeBorder};
   border-radius: 8px;
   color: ${({ theme }) => theme.colors.muted};
   font-size: 14px;

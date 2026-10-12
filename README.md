@@ -203,6 +203,12 @@ Cada região remota possui estado de carregamento, limite de espera de dez segun
 | `npm run build:storybook` | Build estático da documentação de componentes        |
 | `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
 
+## Tema claro e escuro
+
+Use o botão de sol ou lua no cabeçalho para alternar entre os temas. O portal começa no tema escuro e mantém a escolha após recarregar ou navegar entre as telas, sem perder filtros ou rascunhos de avaliação.
+
+A preferência é salva por origem no navegador e sincronizada entre abas. Cada aplicação independente mantém sua própria escolha. Se o armazenamento estiver indisponível, a alternância continua funcionando durante a visita.
+
 ## Catálogo e favoritos
 
 `/filmes` exibe até 20 filmes por página, com pôster, título, ano, nota da TMDB e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores.
@@ -260,7 +266,7 @@ npm run test:e2e
 
 Em Linux, utilize `npx playwright install --with-deps chromium`. Os testes unitários, de componentes e E2E usam respostas simuladas e não precisam de credenciais da TMDB.
 
-A suíte executa os mesmos 19 cenários em desktop de 1440 px e celular de 360 px, totalizando 38 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+A suíte executa os mesmos 21 cenários em desktop de 1440 px e celular de 360 px, totalizando 42 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica os temas claro e escuro, as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
 
 As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 
@@ -300,7 +306,7 @@ npm run storybook
 
 Abra [http://127.0.0.1:6006](http://127.0.0.1:6006). A porta precisa estar livre; `Ctrl+C` encerra o servidor. O Storybook funciona sem iniciar o portal ou o BFF e sem credenciais da TMDB.
 
-São 33 exemplos em sete grupos: card de filme, botão de favorito, carregamento, erro de requisição, página 404, layout do portal e formulário de avaliação. Os exemplos utilizam os componentes reais, o tema de styled-components e um router em memória. Os dados e o pôster demonstrativo são locais; as ações do formulário não gravam no `localStorage`.
+São 35 exemplos em sete grupos: card de filme, botão de favorito, carregamento, erro de requisição, página 404, layout do portal e formulário de avaliação. A barra de ferramentas permite escolher o tema claro ou escuro. Os exemplos utilizam os componentes reais, o tema de styled-components e um router em memória. Os dados e o pôster demonstrativo são locais; as ações do formulário não gravam no `localStorage`.
 
 Em **Documentação**, consulte a descrição, as propriedades e o código de uso de cada componente. Em **Controls**, altere os valores disponíveis para conferir seus estados. A ferramenta de viewport oferece desktop de 1440 px e celular de 360 px. O exemplo **Alternância** do favorito responde aos cliques; o formulário permite salvar, editar e excluir uma avaliação local.
 

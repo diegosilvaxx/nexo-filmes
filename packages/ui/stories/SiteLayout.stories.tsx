@@ -56,6 +56,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Desktop: Story = {};
 export const Celular: Story = { globals: { viewport: { value: 'mobile', isRotated: false } } };
+export const Claro: Story = { globals: { theme: 'light' } };
+export const ClaroCelular: Story = {
+  globals: { theme: 'light', viewport: { value: 'mobile', isRotated: false } },
+};
 export const Teclado: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

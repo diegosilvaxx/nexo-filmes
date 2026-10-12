@@ -25,10 +25,10 @@ export const Field = styled.label`
   select {
     width: 100%;
     min-height: 46px;
-    border: 1px solid #ffffff24;
+    border: 1px solid ${({ theme }) => theme.colors.controlBorder};
     border-radius: 6px;
     padding: 12px;
-    background: #1b1b20;
+    background: ${({ theme }) => theme.colors.surface};
     color: ${({ theme }) => theme.colors.text};
     font: inherit;
     font-size: 14px;
