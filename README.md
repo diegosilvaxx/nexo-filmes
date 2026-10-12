@@ -8,7 +8,7 @@ Portal de filmes com React 19, TypeScript strict, Module Federation, Axios, styl
 
 Para desenvolvimento e testes locais:
 
-- Node.js **24.21.0**.
+- Node.js **>=22.0.0**.
 - npm 10 ou superior.
 
 ## Ambiente
@@ -304,7 +304,7 @@ npm run test:e2e
 
 Em Linux, utilize `npx playwright install --with-deps chromium`. Os testes unitários, de componentes e E2E usam respostas simuladas e não precisam de credenciais da TMDB.
 
-A suíte executa os mesmos 23 cenários em desktop de 1440 px e celular de 360 px, totalizando 46 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica o reaproveitamento e a expiração do cache no cliente, os temas claro e escuro, as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+A suíte executa os mesmos 24 cenários em desktop de 1440 px e celular de 360 px, totalizando 48 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica o reaproveitamento e a expiração do cache no cliente, os temas claro e escuro, as três aplicações independentes e a recuperação dos remotes, incluindo a navegação entre menus após uma nova tentativa.
 
 As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 

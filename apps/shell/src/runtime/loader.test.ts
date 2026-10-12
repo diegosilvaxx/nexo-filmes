@@ -76,6 +76,49 @@ describe('carregamento federado', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('preserva a entrada recuperada ao navegar e carregar outro export do mesmo remote', async () => {
+    const { loadRemoteComponent } = await import('./loader');
+    mocks.loadRemote
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValue({ App, FavoritesCounter: App });
+    await expect(loadRemoteComponent('area', 'FavoritesCounter')).rejects.toThrow('offline');
+    await loadRemoteComponent('area', 'App', 1);
+    await loadRemoteComponent('area', 'App');
+    await loadRemoteComponent('area', 'FavoritesCounter');
+
+    expect(mocks.registerRemotes).toHaveBeenCalledTimes(2);
+    expect(mocks.registerRemotes).toHaveBeenLastCalledWith(
+      [
+        {
+          name: 'area',
+          entry: expect.stringMatching(/remoteEntry\.js\?retry=\d+-1$/),
+          type: 'module',
+        },
+      ],
+      { force: true },
+    );
+    expect(mocks.loadRemote).toHaveBeenLastCalledWith('area/FavoritesCounter');
+  });
+
+  it('substitui a entrada recuperada quando o endereço configurado muda', async () => {
+    const { loadRemoteComponent } = await import('./loader');
+    await loadRemoteComponent('area', 'App', 1);
+    mocks.loadRuntimeConfig.mockResolvedValue({
+      remotes: {
+        catalog: 'https://catalog.example/remoteEntry.js',
+        movie: 'https://movie.example/remoteEntry.js',
+        area: 'https://new-area.example/remoteEntry.js',
+      },
+    });
+    await loadRemoteComponent('area', 'App');
+
+    expect(mocks.registerRemotes).toHaveBeenCalledTimes(2);
+    expect(mocks.registerRemotes).toHaveBeenLastCalledWith(
+      [{ name: 'area', entry: 'https://new-area.example/remoteEntry.js', type: 'module' }],
+      { force: true },
+    );
+  });
+
   it.each([null, {}, { App: 'inválido' }])('rejeita exports inválidos: %j', async (module) => {
     mocks.loadRemote.mockResolvedValueOnce(module);
     const { loadRemoteComponent } = await import('./loader');

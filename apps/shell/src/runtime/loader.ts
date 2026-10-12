@@ -5,21 +5,27 @@ import { loadRuntimeConfig, resetRuntimeConfig } from './config';
 
 type RemoteExports = Record<string, ComponentType>;
 export type RemoteExpose = 'App' | 'FavoritesCounter';
-const registrations = new Map<RemoteName, string>();
+const registrations = new Map<RemoteName, { configuredEntry: string; entry: string }>();
 
 export async function loadRemoteComponent(name: RemoteName, expose: RemoteExpose, attempt = 0) {
   if (attempt > 0) resetRuntimeConfig();
   const config = await loadRuntimeConfig();
-  const entry = new URL(config.remotes[name]);
+  const configuredEntry = new URL(config.remotes[name]).href;
+  const registration = registrations.get(name);
+  const entry = new URL(
+    attempt === 0 && registration?.configuredEntry === configuredEntry
+      ? registration.entry
+      : configuredEntry,
+  );
   if (attempt > 0) entry.searchParams.set('retry', `${Date.now()}-${attempt}`);
   const runtime = getInstance((instance) => instance.name === 'shell');
   if (!runtime) throw new Error('Runtime indisponível.');
   const entryUrl = entry.href;
-  if (registrations.get(name) !== entryUrl) {
+  if (registration?.entry !== entryUrl) {
     runtime.registerRemotes([{ name, entry: entryUrl, type: 'module' }], {
       force: registrations.has(name),
     });
-    registrations.set(name, entryUrl);
+    registrations.set(name, { configuredEntry, entry: entryUrl });
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
   let module: RemoteExports | null;

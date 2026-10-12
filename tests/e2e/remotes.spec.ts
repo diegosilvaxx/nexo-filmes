@@ -39,4 +39,43 @@ test('falha do catálogo fica isolada e o remote recupera pelo botão de nova te
   await context.unroute(entry);
   await content.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
   await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
+  await page.getByRole('banner').getByRole('link', { name: 'Painel', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Seu painel.' })).toBeVisible();
+  await page.getByRole('banner').getByRole('link', { name: 'Filmes', exact: true }).click();
+  await expect(page.getByRole('article').getByRole('link')).toHaveCount(20);
+});
+
+test('Minha área recuperada continua disponível ao alternar entre os menus', async ({
+  page,
+  context,
+}) => {
+  const entry = /http:\/\/127\.0\.0\.1:4303\/remoteEntry\.js/;
+  const entries: string[] = [];
+  page.on('request', (request) => {
+    if (entry.test(request.url())) entries.push(request.url());
+  });
+  await context.route(entry, (route) => route.abort('failed'));
+  await page.goto('/favoritos');
+  const content = page.getByRole('main');
+  const header = page.getByRole('banner');
+  await expect(content.getByRole('alert')).toContainText('Não foi possível carregar os favoritos.');
+  await expect(header.getByRole('alert')).toContainText('Não foi possível carregar os favoritos.');
+
+  await context.unroute(entry);
+  await content.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Seus favoritos.' })).toBeVisible();
+  await header.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
+  await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 0 favoritos');
+  const recoveredEntries = [...entries];
+
+  for (let visit = 0; visit < 2; visit += 1) {
+    await header.getByRole('link', { name: 'Painel', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Seu painel.' })).toBeVisible();
+    await header.getByRole('link', { name: 'Filmes', exact: true }).click();
+    await expect(page.getByRole('article')).toHaveCount(20);
+    await favoriteCounter(page).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Seus favoritos.' })).toBeVisible();
+    await expect(favoriteCounter(page)).toHaveAccessibleName('Favoritos 0 favoritos');
+  }
+  expect(entries, 'A navegação deve reutilizar o remote recuperado').toEqual(recoveredEntries);
 });
