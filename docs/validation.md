@@ -22,6 +22,7 @@ Favoritos e avaliações passam pelo repositório assíncrono; as aplicações n
 | Diferencial           | Local de verificação                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | Ordenação             | Seletor do catálogo e parâmetro `sort` na URL                                        |
+| Cache no cliente      | Reutilização de consultas, validade, limite de entradas e cancelamento compartilhado |
 | Tema claro e escuro   | Botão de sol/lua no cabeçalho; preferência preservada após recarga e entre abas      |
 | Exclusão de avaliação | Botão no formulário de uma avaliação existente                                       |
 | Painel pessoal        | `/painel`, incluindo média com uma casa decimal e desempate alfabético de gênero     |

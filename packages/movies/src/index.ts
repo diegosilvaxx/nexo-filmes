@@ -12,10 +12,38 @@ import {
 } from '@nexo/contracts';
 
 import { MoviesApiError } from './errors';
+import { createRequestCache, type RequestCache } from './request-cache';
 export { MoviesApiError } from './errors';
 export { useResource } from './useResource';
 
-export function createMoviesApi(client: AxiosInstance = createHttpClient()) {
+const defaultClient = createHttpClient();
+const caches = new WeakMap<AxiosInstance, RequestCache>();
+const ttl = { genres: 3_600_000, movies: 120_000, movie: 300_000 };
+
+export function createMoviesApi(client: AxiosInstance = defaultClient) {
+  const cache = caches.get(client) ?? createRequestCache();
+  caches.set(client, cache);
+
+  function cachedGet<T>(
+    path: string,
+    schema: z.ZodType<T>,
+    lifetime: number,
+    params?: MovieQuery,
+    signal?: AbortSignal,
+  ) {
+    const key = JSON.stringify([
+      client.defaults.baseURL ?? '',
+      path,
+      params ? [params.page, params.search, params.genreId ?? null, params.sort] : null,
+    ]);
+    return cache.get(
+      key,
+      lifetime,
+      (sharedSignal) => get(path, schema, params, sharedSignal),
+      signal,
+    );
+  }
+
   async function get<T>(
     path: string,
     schema: z.ZodType<T>,
@@ -62,7 +90,8 @@ export function createMoviesApi(client: AxiosInstance = createHttpClient()) {
     }
   }
   return {
-    genres: (signal?: AbortSignal) => get('/genres', z.array(genreSchema), undefined, signal),
+    genres: (signal?: AbortSignal) =>
+      cachedGet('/genres', z.array(genreSchema), ttl.genres, undefined, signal),
     movies: (query: Partial<MovieQuery> = {}, signal?: AbortSignal) => {
       const parsed = movieQuerySchema.safeParse(query);
       if (!parsed.success)
@@ -73,12 +102,12 @@ export function createMoviesApi(client: AxiosInstance = createHttpClient()) {
             'Consulta inválida. Verifique os filtros e a paginação.',
           ),
         );
-      return get('/movies', moviePageSchema, parsed.data, signal);
+      return cachedGet('/movies', moviePageSchema, ttl.movies, parsed.data, signal);
     },
     movie: (id: number, signal?: AbortSignal) => {
       if (!movieIdSchema.safeParse(id).success)
         return Promise.reject(new MoviesApiError('INVALID_REQUEST', 400, 'Filme inválido.'));
-      return get(`/movies/${id}`, movieDetailsSchema, undefined, signal);
+      return cachedGet(`/movies/${id}`, movieDetailsSchema, ttl.movie, undefined, signal);
     },
   };
 }

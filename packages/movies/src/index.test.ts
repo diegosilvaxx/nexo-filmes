@@ -1,29 +1,31 @@
 // @vitest-environment node
 import axios, { AxiosError, CanceledError } from 'axios';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createMoviesApi } from './index';
 import { rawGenres, detail, page } from '../../../tests/movie-fixtures';
 
 const response = vi.fn();
-function api() {
-  return createMoviesApi(
-    axios.create({
-      baseURL: '/api',
-      adapter: async (config) => ({
-        data: await response(config),
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config,
-      }),
+function client() {
+  return axios.create({
+    baseURL: '/api',
+    adapter: async (config) => ({
+      data: await response(config),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
     }),
-  );
+  });
+}
+function api() {
+  return createMoviesApi(client());
 }
 beforeEach(() => {
   response.mockReset();
 });
+afterEach(() => vi.useRealTimers());
 
-it('consulta contratos normalizados e propaga AbortSignal', async () => {
+it('consulta contratos normalizados com um AbortSignal para a chamada compartilhada', async () => {
   response
     .mockResolvedValueOnce(rawGenres.genres)
     .mockResolvedValueOnce(page)
@@ -38,10 +40,71 @@ it('consulta contratos normalizados e propaga AbortSignal', async () => {
     expect.objectContaining({
       url: '/movies',
       baseURL: '/api',
-      signal: controller.signal,
+      signal: expect.any(AbortSignal),
       params: { page: 1, search: '', genreId: 18, sort: 'popular' },
     }),
   );
+});
+
+it('compartilha o cache entre instâncias da API que utilizam o mesmo cliente HTTP', async () => {
+  response.mockResolvedValue(detail);
+  const http = client();
+  const a = createMoviesApi(http);
+  const b = createMoviesApi(http);
+  expect(await Promise.all([a.movie(550), b.movie(550)])).toEqual([detail, detail]);
+  await b.movie(550);
+  expect(response).toHaveBeenCalledTimes(1);
+});
+
+it('normaliza a chave e distingue página, gênero, busca e ordenação', async () => {
+  response.mockResolvedValue(page);
+  const movies = api();
+  await movies.movies();
+  await movies.movies({ sort: 'popular', page: 1, search: '' });
+  expect(response).toHaveBeenCalledTimes(1);
+  await movies.movies({ page: 2 });
+  await movies.movies({ genreId: 18 });
+  await movies.movies({ sort: 'rating' });
+  await movies.movies({ search: 'Matrix' });
+  expect(response).toHaveBeenCalledTimes(5);
+});
+
+it.each([
+  { resource: 'genres', lifetime: 3_600_000, data: rawGenres.genres },
+  { resource: 'movies', lifetime: 120_000, data: page },
+  { resource: 'movie', lifetime: 300_000, data: detail },
+] as const)('expira $resource após $lifetime ms', async ({ resource, lifetime, data }) => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  response.mockResolvedValue(data);
+  const movies = api();
+  const read = () => (resource === 'movie' ? movies.movie(550) : movies[resource]());
+  await read();
+  vi.setSystemTime(Date.now() + lifetime - 1);
+  await read();
+  expect(response).toHaveBeenCalledTimes(1);
+  vi.setSystemTime(Date.now() + 1);
+  await read();
+  expect(response).toHaveBeenCalledTimes(2);
+});
+
+it('não guarda respostas que falharam na validação Zod', async () => {
+  response.mockResolvedValueOnce({ id: 'wrong' }).mockResolvedValue(detail);
+  const movies = api();
+  await expect(movies.movie(550)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  expect(await movies.movie(550)).toEqual(detail);
+  await movies.movie(550);
+  expect(response).toHaveBeenCalledTimes(2);
+});
+
+it('isola clientes HTTP diferentes e mudanças na URL base', async () => {
+  response.mockResolvedValue(detail);
+  const http = client();
+  const movies = createMoviesApi(http);
+  await movies.movie(550);
+  await api().movie(550);
+  http.defaults.baseURL = '/another-api';
+  await movies.movie(550);
+  expect(response).toHaveBeenCalledTimes(3);
 });
 
 it('rejeita resposta inválida', async () => {

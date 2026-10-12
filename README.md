@@ -203,6 +203,24 @@ Cada região remota possui estado de carregamento, limite de espera de dez segun
 | `npm run build:storybook` | Build estático da documentação de componentes        |
 | `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
 
+## Cache no cliente
+
+As respostas válidas dos filmes são reutilizadas em memória pelo cliente. O primeiro acesso consulta o BFF; os seguintes utilizam o cache enquanto a resposta estiver dentro do prazo. Quando ela expira, o próximo acesso faz uma nova consulta.
+
+| Dados             | Validade  |
+| ----------------- | --------- |
+| Catálogo e buscas | 2 minutos |
+| Detalhes de filme | 5 minutos |
+| Gêneros           | 1 hora    |
+
+A chave do catálogo inclui página, busca, gênero e ordenação. O pacote `@nexo/movies` é compartilhado como singleton entre os micro-frontends, e o cache guarda até 200 respostas, descartando as expiradas e as acessadas há mais tempo.
+
+Consultas simultâneas iguais compartilham uma chamada HTTP. O cancelamento de uma tela preserva a consulta dos demais consumidores; quando todos cancelam, a requisição é interrompida. Erros e respostas inválidas não são armazenados, permitindo uma nova tentativa.
+
+O cache dura somente durante a visita: recarregar a página limpa os dados em memória. Outras abas e aplicações independentes têm seus próprios caches. Favoritos e avaliações mantêm o estado e a persistência existentes.
+
+Para conferir, abra a aba **Network** do navegador e filtre por `/api`. Visite o catálogo, abra um filme e volte pelo menu: as consultas já concluídas não devem se repetir dentro do prazo de validade. Alterar um filtro faz uma nova consulta; retornar ao filtro anterior reutiliza sua resposta.
+
 ## Tema claro e escuro
 
 Use o botão de sol ou lua no cabeçalho para alternar entre os temas. O portal começa no tema escuro e mantém a escolha após recarregar ou navegar entre as telas, sem perder filtros ou rascunhos de avaliação.
@@ -266,7 +284,7 @@ npm run test:e2e
 
 Em Linux, utilize `npx playwright install --with-deps chromium`. Os testes unitários, de componentes e E2E usam respostas simuladas e não precisam de credenciais da TMDB.
 
-A suíte executa os mesmos 21 cenários em desktop de 1440 px e celular de 360 px, totalizando 42 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica os temas claro e escuro, as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
+A suíte executa os mesmos 23 cenários em desktop de 1440 px e celular de 360 px, totalizando 46 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica o reaproveitamento e a expiração do cache no cliente, os temas claro e escuro, as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
 
 As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 

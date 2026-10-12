@@ -39,6 +39,12 @@ export function createAppConfig(application: ApplicationName) {
           'react-router-dom': { singleton: true, requiredVersion: '7.18.4' },
           'react-router': { singleton: true, requiredVersion: '7.18.4' },
           'styled-components': { singleton: true, requiredVersion: '6.5.3' },
+          '@nexo/movies': {
+            singleton: true,
+            version: '0.1.0',
+            requiredVersion: '0.1.0',
+            import: resolve(repositoryRoot, 'packages/movies/src/index.ts').replaceAll('\\', '/'),
+          },
           '@nexo/user-data': {
             singleton: true,
             version: '0.1.0',
@@ -55,10 +61,6 @@ export function createAppConfig(application: ApplicationName) {
     resolve: {
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom', 'styled-components'],
       alias: [
-        {
-          find: /^@nexo\/movies$/,
-          replacement: resolve(repositoryRoot, 'packages/movies/src/index.ts'),
-        },
         { find: /^@nexo\/ui$/, replacement: resolve(repositoryRoot, 'packages/ui/src/index.tsx') },
         {
           find: /^@nexo\/http$/,
