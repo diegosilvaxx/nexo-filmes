@@ -8,14 +8,30 @@ Portal de filmes com React 19, TypeScript strict, Module Federation, Axios, styl
 
 Para desenvolvimento e testes locais:
 
-- Node.js 22.12 ou superior. Versão recomendada: Node.js 24, indicada em `.nvmrc`.
+- Node.js **24.21.0**.
 - npm 10 ou superior.
+
+## Ambiente
+
+Na raiz do repositório, copie `.env.example` para `.env` caso o arquivo ainda não exista.
+
+No PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+No Linux ou macOS:
+
+```bash
+cp .env.example .env
+```
+
+Preencha `TMDB_READ_ACCESS_TOKEN` com o **API Read Access Token** da TMDB antes de iniciar o sistema. Essa configuração é utilizada na execução local e no Docker.
 
 ## Execução
 
-Na raiz do repositório:
-
-Copie `.env.example` para `.env` e preencha `TMDB_READ_ACCESS_TOKEN` com o **API Read Access Token** da TMDB. Se o `.env` já existir, mantenha os valores locais. O token é lido apenas pelo servidor.
+Com o ambiente configurado, execute na raiz:
 
 ```bash
 npm install
@@ -40,22 +56,8 @@ Esta execução usa builds de produção e exige apenas Docker com Compose; Node
 
 1. Instale e abra o Docker Desktop com containers Linux. Confira a instalação com `docker compose version`.
 2. Abra um terminal na raiz do repositório, onde estão `compose.yaml` e `Dockerfile`.
-3. Copie `.env.example` para `.env` e preencha `TMDB_READ_ACCESS_TOKEN` com o **API Read Access Token** da TMDB. Se o `.env` já existir, mantenha os valores locais.
+3. Configure o `.env` conforme a seção [Ambiente](#ambiente).
 4. Encerre outros servidores que estejam usando as portas 4100 a 4103 e inicie os serviços com o comando abaixo.
-
-Para copiar o ambiente no PowerShell, caso ele ainda não exista:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-No Linux ou macOS:
-
-```bash
-cp .env.example .env
-```
-
-Após preencher o token, inicie o sistema:
 
 ```bash
 docker compose up --build --wait
@@ -69,31 +71,17 @@ docker compose logs --tail=100
 docker compose down
 ```
 
-O `Dockerfile` usa etapas separadas para instalação, build e execução. Cada frontend recebe somente seu build e é servido por Nginx, com fallback de navegação, CORS nos remotes, assets com hash em cache e configuração runtime sem cache. O BFF usa Node.js 24, dependências de produção e um usuário sem privilégios de root. Os frontends aguardam a saúde do BFF na inicialização; um remote pode ser parado ou recriado independentemente.
+O `Dockerfile` usa etapas separadas para instalação, build e execução. Cada frontend recebe somente seu build e é servido por Nginx. O BFF usa dependências de produção e um usuário sem privilégios de root. Os frontends aguardam a saúde do BFF na inicialização; um remote pode ser parado ou recriado independentemente.
 
-O token é fornecido apenas ao ambiente do BFF durante a execução. O `.dockerignore` exclui todos os arquivos `.env`, dependências locais, relatórios e builds do contexto. O BFF escuta em `0.0.0.0:4200` dentro da rede dos containers; essa porta não é publicada no computador. Cada Nginx encaminha `/api` ao serviço `bff`. `BFF_HOST`, `BFF_PORT` e `NEXO_BFF_URL` do ambiente de desenvolvimento não alteram essa rede interna.
+O `.dockerignore` exclui arquivos `.env`, dependências locais, relatórios e builds do contexto. O token é fornecido ao BFF em runtime. Ele escuta em `0.0.0.0:4200` dentro da rede dos containers; essa porta não é publicada no computador. Cada Nginx encaminha `/api` ao serviço `bff`. `BFF_HOST`, `BFF_PORT` e `NEXO_BFF_URL` do ambiente de desenvolvimento não alteram essa rede interna.
 
 O Compose lê o `.env` da raiz e as variáveis do processo; arquivos `.env.local` e `.env.production` não são carregados por essa execução. As variáveis `VITE_PORTAL_URL` e `VITE_USER_DATA_*` são argumentos públicos de build: após modificá-las ou alterar o código, execute novamente `docker compose up --build --wait`.
 
-As variáveis `NEXO_CATALOG_REMOTE_URL`, `NEXO_MOVIE_REMOTE_URL` e `NEXO_AREA_REMOTE_URL` configuram o JSON do Shell quando o container inicia. Use endereços acessíveis pelo navegador, como os padrões em `127.0.0.1`, e não os nomes internos dos serviços. Depois de alterar essas URLs no `.env`, aplique a configuração sem recompilar:
+Para alterar os endereços dos remotes sem recompilar, consulte [URLs dos remotes](#urls-dos-remotes).
 
-```bash
-docker compose up --no-deps --force-recreate --wait shell
-```
+`docker compose down` não remove os favoritos e avaliações do navegador. Nenhum banco ou volume de dados é necessário.
 
-Favoritos e avaliações continuam no navegador, por origem. Ao acessar o mesmo endereço do desenvolvimento, os dados locais permanecem disponíveis; `docker compose down` não os remove. Nenhum banco ou volume de dados é necessário.
-
-Para validar a configuração sem exibir os valores do ambiente, execute `docker compose config --quiet`. Com os containers em execução e as dependências de testes instaladas, `npm run test:docker` verifica saúde, proxy, configuração runtime, CORS, arquivos ausentes, rotas profundas, portal integrado, persistência e remotes independentes. As consultas de filmes são simuladas no navegador; a verificação HTTP de saúde utiliza o BFF real. O CI executa esses testes com uma credencial fictícia, sem chamar a TMDB.
-
-Para executar esses testes localmente, também é necessário ter Node.js e npm no computador:
-
-```bash
-npm ci
-npx playwright install chromium
-npm run test:docker
-```
-
-O relatório Docker fica em `playwright-report-docker/`, separado do E2E. Abra-o com `npx playwright show-report playwright-report-docker`. Os arquivos de diagnóstico ficam em `test-results-docker/`.
+Para validar a configuração sem exibir os valores do ambiente, execute `docker compose config --quiet`. Os testes de integração estão descritos em [Testes e CI](#testes-e-ci).
 
 Referências: [Docker Desktop no Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [build em etapas](https://docs.docker.com/build/building/multi-stage/) e [ordem de inicialização no Compose](https://docs.docker.com/compose/how-tos/startup-order/).
 
@@ -149,7 +137,7 @@ Verificação local realizada em 9 de outubro de 2026:
 
 As imagens abaixo são capturas dos relatórios gerados pelas suítes. Os testes de filmes usam respostas simuladas, sem depender da TMDB real.
 
-### Integração Docker
+### Relatório Docker
 
 ![Relatório Playwright com os dois testes Docker aprovados e nenhuma falha](docs/images/testes-docker.png)
 
@@ -192,7 +180,7 @@ O Shell carrega os três remotes com Module Federation. Cada aplicação possui 
 
 Os pacotes compartilhados fornecem UI, contratos e infraestrutura HTTP. `npm run architecture` verifica importações estáticas, reexports e imports dinâmicos com caminho literal, impedindo dependências diretas entre aplicações e a importação do adapter da TMDB pelo navegador. As dependências são gerenciadas por um único `package-lock.json`.
 
-Os estilos são definidos com styled-components, tema tipado e estilos globais aplicados pelo `UIProvider`. O pacote `@nexo/http` disponibiliza uma fábrica de clientes Axios com base URL configurável, timeout de 15 segundos e cabeçalho `Accept: application/json`. `@nexo/movies` consulta o BFF e valida os contratos retornados com Zod. `@nexo/tmdb` usa Axios com timeout de 12 segundos, `language=pt-BR` e autenticação Bearer. O navegador não recebe o token.
+Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
 
 ## Comandos
 
@@ -215,15 +203,9 @@ Os estilos são definidos com styled-components, tema tipado e estilos globais a
 | `npm run build:storybook` | Build estático da documentação de componentes        |
 | `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
 
-## Funcionamento
-
-O workspace inclui Shell e três remotes integrados, navegação por URL, cabeçalho compartilhado e página 404. Cada região remota possui estado de carregamento, limite de espera de dez segundos e tratamento de erro com botão de nova tentativa. O contador do cabeçalho tem uma região de recuperação separada do conteúdo.
-
-O catálogo consulta a TMDB pelo BFF e exibe até 20 filmes por página, com pôster, título, ano, nota e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores. O detalhe exibe sinopse, duração, direção e elenco, permite favoritar e criar, editar ou excluir uma avaliação. A página de favoritos mostra a nota pessoal e permite remover filmes, com contador sincronizado no cabeçalho. O painel exibe totais de favoritos e avaliados, média das notas e gênero mais frequente entre os favoritos.
-
-Os testes usam respostas simuladas e não acessam a TMDB. Verificam remotes, contratos, conversão de dados, cache, validação, rotas HTTP, consultas pela URL, debounce, cancelamento, limite de requisições, persistência e reversão de favoritos e avaliações. Os testes de formulário verificam mensagens por campo, foco no primeiro erro, preservação do rascunho, substituição e exclusão. O painel tem testes de cálculo, desempate, formatação, estados de leitura e atualização de métricas. `npm run test:coverage` exige pelo menos 70% de linhas em `tmdb`, `movies`, `user-data`, na normalização da consulta do catálogo, no formulário de avaliação e no cálculo de estatísticas. Os testes não leem o token local.
-
 ## Catálogo e favoritos
+
+`/filmes` exibe até 20 filmes por página, com pôster, título, ano, nota da TMDB e gêneros. Busca, gênero, ordenação e página ficam na URL. A busca aguarda 400 ms após a última alteração e cancela consultas anteriores.
 
 A paginação permite selecionar os números diretamente, com primeira e última página, setas anterior e próxima e reticências para intervalos maiores. A página atual fica sublinhada; a navegação preserva os filtros na URL.
 
@@ -231,13 +213,15 @@ Exemplos de URLs compartilháveis: `/filmes?page=2&genreId=18&sort=rating` e `/f
 
 `@nexo/user-data` centraliza o acesso ao `localStorage`, valida os dados com Zod e oferece operações assíncronas de favoritos e avaliações. O estado é compartilhado como singleton pelo Module Federation e observado com `useSyncExternalStore`. O evento tipado `nexo:user-data-changed` identifica o recurso e notifica carregamentos, alterações otimistas, gravações e reversões. Adicionar ou remover um favorito atualiza imediatamente as telas e o contador, exibe o estado de salvamento e restaura apenas o filme afetado se a escrita falhar.
 
+`/favoritos` apresenta os filmes salvos com pôster, título, ano e nota pessoal, permite removê-los e é acessível pelo contador do cabeçalho.
+
 Por padrão, cada leitura ou escrita aguarda de 300 a 1.500 ms. Gravações de filmes cujo ID termina em `13` falham, inclusive remoções de favoritos, salvamentos e exclusões de avaliações. A simulação pode ser configurada por `VITE_USER_DATA_DELAY_MIN_MS`, `VITE_USER_DATA_DELAY_MAX_MS` e `VITE_USER_DATA_FAIL_WRITES`; no modo `test` usado pelo Vitest ela fica desativada. Reinicie o desenvolvimento ou gere novo build após alterar essas variáveis.
 
 Favoritos persistem no navegador, por origem, e mudanças em outras abas da mesma origem atualizam o estado. Aplicações independentes em portas distintas têm armazenamento separado. Seus links para outras aplicações usam `VITE_PORTAL_URL`, com padrão `http://127.0.0.1:4100`. Dados corrompidos ou armazenamento indisponível apresentam erro sem sobrescrever o conteúdo existente.
 
 ## Detalhes e avaliações
 
-`/filme/:id` carrega os dados normalizados pelo BFF. IDs inválidos ou filmes inexistentes apresentam a página 404. Requisições são canceladas ao mudar de filme; respostas antigas não substituem a tela atual. Há estados para dados ausentes, carregamento e erro com nova tentativa. No remote independente, `/` abre `/filme/550`.
+`/filme/:id` mostra pôster, título, ano, duração, gêneros, nota da TMDB, sinopse, direção e elenco, além de permitir favoritar e avaliar. IDs inválidos ou filmes inexistentes apresentam a página 404. Requisições são canceladas ao mudar de filme; respostas antigas não substituem a tela atual. Há estados para dados ausentes, carregamento e erro com nova tentativa. No remote independente, `/` abre `/filme/550`.
 
 A avaliação é única por filme, com nota obrigatória de 0,5 a 10 em passos de 0,5 e comentário opcional de até 500 caracteres. Os campos preservam os valores digitados, sem correção automática da nota ou bloqueio de caracteres no comentário. Ao salvar, o schema Zod valida os campos e impede a gravação de dados inválidos. Cada campo inválido recebe sua mensagem e descrição acessível, o primeiro recebe foco e os valores permanecem no formulário.
 
@@ -253,28 +237,56 @@ Favoritos e avaliações usam registros versionados separados, `nexo-filmes:favo
 
 Sem avaliações ou gêneros disponíveis, a métrica correspondente exibe `—`. Os recursos carregam de forma independente: uma falha nas avaliações preserva as estatísticas dos favoritos e oferece nova tentativa, e vice-versa. Mudanças otimistas e reversões atualizam as métricas sem recarregar a página, com indicação de salvamento. O painel utiliza os mesmos estados compartilhados das outras telas, sem novas consultas à TMDB.
 
-## Testes de navegador e CI
+## Testes e CI
 
-Após instalar as dependências, instale o Chromium do Playwright uma vez:
+### Unitários
+
+```bash
+npm test
+npm run test:coverage
+```
+
+A cobertura exige pelo menos 70% de linhas no adapter da TMDB, no cliente de filmes, no repositório de dados pessoais, na consulta do catálogo, no formulário de avaliação e no cálculo das estatísticas.
+
+### Navegador e componentes
+
+Após instalar as dependências do projeto, instale o Chromium uma vez para E2E, Storybook e integração Docker:
 
 ```bash
 npx playwright install chromium
+npm run test:storybook
 npm run test:e2e
 ```
 
-Em Linux, utilize `npx playwright install --with-deps chromium` para instalar também as bibliotecas do sistema. Para abrir o relatório da última execução, use `npm run test:e2e:report`.
+Em Linux, utilize `npx playwright install --with-deps chromium`. Os testes unitários, de componentes e E2E usam respostas simuladas e não precisam de credenciais da TMDB.
 
 A suíte executa os mesmos 19 cenários em desktop de 1440 px e celular de 360 px, totalizando 38 testes. Verifica paginação, busca com debounce, filtros na URL, favoritos, avaliações, painel, persistência após recarga, sincronização entre abas, validação e foco, rollback, carregamento, erro de API, 404, navegação por teclado e ausência de overflow horizontal. Também verifica as três aplicações independentes e a recuperação de uma falha de carregamento do remote.
 
 As verificações com axe abrangem as telas completas, favoritos vazios e preenchidos, formulário inválido, erro da API e armazenamento indisponível. O teste de teclado verifica o atalho para o conteúdo, a ordem de foco e o contraste do contorno de foco em relação ao fundo.
 
-O setup gera builds reais do Shell e dos remotes em `dist/e2e/`, inicia prévias nas portas 4300 a 4303 e encerra esses servidores ao terminar. As portas precisam estar livres. Os builds normais e as portas de desenvolvimento são preservados. As chamadas de API recebem respostas locais simuladas, sem iniciar o BFF ou exigir credenciais da TMDB. Cada teste utiliza um contexto de navegador com armazenamento isolado e grava dados pelos controles da interface.
+O setup gera builds do Shell e dos remotes em `dist/e2e/`, inicia prévias nas portas 4300 a 4303 e encerra esses servidores ao terminar. As portas precisam estar livres. Cada teste utiliza um contexto de navegador com armazenamento isolado.
 
-No modo `e2e`, o repositório real mantém atraso fixo de 500 ms e falha nas escritas de IDs terminados em `13`, permitindo verificar estados otimistas, persistência e reversão. Falhas geram screenshot, vídeo e trace; o relatório HTML fica em `playwright-report/` e os arquivos de diagnóstico em `test-results/`. Esses diretórios são ignorados pelo Git.
+No modo `e2e`, o repositório mantém atraso fixo de 500 ms e falha nas escritas de IDs terminados em `13`. Falhas geram screenshot, vídeo e trace em `test-results/`. O relatório HTML fica em `playwright-report/`; abra-o com `npm run test:e2e:report`.
 
-O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Com Node.js 24 e `npm ci`, verifica arquitetura, tipos, lint, formatação, cobertura e os builds do portal e do Storybook; após essa aprovação, executa os testes de componentes e os E2E. Os relatórios de cobertura e navegador ficam disponíveis como artefatos por sete dias. O workflow não precisa de secrets da TMDB.
+### Integração Docker
 
-Um job adicional gera as imagens Docker, inicia os cinco containers, verifica a alteração das URLs em runtime sem recompilar e executa `npm run test:docker`. A saúde e os testes de integração precisam passar; os containers são encerrados ao final, inclusive em falhas, e o relatório do navegador fica disponível como artefato.
+Com os containers em execução e as dependências de testes instaladas, execute:
+
+```bash
+npm run test:docker
+```
+
+A suíte verifica saúde, proxy do BFF, configuração runtime, CORS, arquivos ausentes, rotas profundas, persistência e remotes independentes. As consultas de filmes são simuladas no navegador; a verificação HTTP de saúde utiliza o BFF real.
+
+O relatório fica em `playwright-report-docker/` e os diagnósticos em `test-results-docker/`, separados das saídas do E2E. Abra-o com `npx playwright show-report playwright-report-docker`.
+
+### CI
+
+O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Utiliza a versão de `.nvmrc` e `npm ci` para verificar arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os testes de componentes e E2E. Os relatórios e o build do Storybook ficam disponíveis como artefatos por sete dias.
+
+Um job adicional gera as imagens Docker, inicia os cinco containers, verifica a alteração das URLs em runtime sem recompilar e executa a suíte de integração. Os containers são encerrados ao final, inclusive em falhas. O CI usa uma credencial fictícia para iniciar o BFF e não precisa de secrets da TMDB.
+
+O [guia de verificação](docs/validation.md) relaciona os requisitos à implementação e descreve os cenários manuais.
 
 Referências: [Playwright](https://playwright.dev/docs/intro), [setup e teardown](https://playwright.dev/docs/test-global-setup-teardown) e [GitHub Actions](https://docs.github.com/en/actions).
 
@@ -292,16 +304,9 @@ São 33 exemplos em sete grupos: card de filme, botão de favorito, carregamento
 
 Em **Documentação**, consulte a descrição, as propriedades e o código de uso de cada componente. Em **Controls**, altere os valores disponíveis para conferir seus estados. A ferramenta de viewport oferece desktop de 1440 px e celular de 360 px. O exemplo **Alternância** do favorito responde aos cliques; o formulário permite salvar, editar e excluir uma avaliação local.
 
-Os exemplos de interação verificam os callbacks, a validação Zod, o foco no primeiro erro, a preservação do rascunho e a navegação por teclado. O painel **Accessibility** apresenta as verificações com axe. Para executar as interações e as verificações de acessibilidade automaticamente:
+O painel **Accessibility** apresenta as verificações com axe. No painel lateral **Component tests**, marque **Accessibility** e clique em **Run tests** para executar interações e acessibilidade pela interface. Para rodar pelo terminal, consulte [Testes e CI](#testes-e-ci). As verificações automáticas complementam a revisão manual por teclado e com leitor de tela.
 
-```bash
-npx playwright install chromium
-npm run test:storybook
-```
-
-O Chromium é compartilhado com os testes E2E e só precisa ser instalado uma vez. Não é necessário manter o servidor Storybook aberto para executar esses testes. No painel lateral **Component tests**, marque **Accessibility** e clique em **Run tests** para executar as duas verificações pela interface. As verificações de acessibilidade falham quando encontram uma violação nos exemplos; elas complementam a revisão manual por teclado e com leitor de tela.
-
-`npm run build:storybook` gera `storybook-static/`, pronto para servir como site estático. Esse build e os testes de componentes também são verificados pelo CI; o build fica disponível como artefato por sete dias. As dependências de Storybook ficam em desenvolvimento e não entram nos builds do portal.
+`npm run build:storybook` gera `storybook-static/`, pronto para servir como site estático.
 
 Referências: [React com Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite), [testes de interação](https://storybook.js.org/docs/writing-tests/interaction-testing) e [acessibilidade](https://storybook.js.org/docs/writing-tests/accessibility-testing).
 
@@ -321,22 +326,15 @@ O Shell obtém `/runtime-config.json` pelo cliente Axios. Os endereços podem se
 
 Em desenvolvimento, o arquivo está em `apps/shell/public/runtime-config.json`. Após o build, edite `dist/shell/runtime-config.json`. Nos servidores Vite, as variáveis `NEXO_CATALOG_REMOTE_URL`, `NEXO_MOVIE_REMOTE_URL` e `NEXO_AREA_REMOTE_URL` em `.env` sobrescrevem os endereços; reinicie os servidores após modificar essas variáveis. O arquivo `.env.example` contém os nomes disponíveis.
 
-Uma nova tentativa busca novamente a configuração e invalida a entrada do remote. Em hospedagem estática, sirva o JSON sem cache, habilite CORS para os arquivos dos remotes e configure fallback de navegação para `index.html` em cada aplicação.
+No Docker, essas variáveis configuram o JSON quando o Shell inicia. Use URLs acessíveis pelo navegador, e não os nomes internos dos serviços. Depois de alterá-las, recrie o Shell sem recompilar:
+
+```bash
+docker compose up --no-deps --force-recreate --wait shell
+```
+
+Uma nova tentativa busca novamente a configuração e invalida a entrada do remote. Em hospedagem estática, sirva o JSON sem cache, habilite CORS para os arquivos dos remotes e configure fallback de navegação para `index.html` em cada aplicação. No Docker, o Nginx já aplica essas regras e mantém os assets com hash em cache.
 
 Para verificar os builds localmente, execute `npm run build` e `npm run preview`.
-
-## Requisitos e verificação
-
-O [guia de verificação](docs/validation.md) relaciona os requisitos à implementação e descreve os cenários manuais, incluindo as falhas de gravação nos IDs terminados em `13`.
-
-## Escopo funcional
-
-- `/filmes`: catálogo com 20 filmes por página, busca, gênero, ordenação e estado na URL.
-- `/filme/:id`: informações do filme, direção, elenco, favoritos e avaliações.
-- `/favoritos`: favoritos com nota pessoal e opção de remoção.
-- `/painel`: totais, nota média e gênero mais frequente entre os favoritos.
-- Contador de favoritos no cabeçalho, sincronizado entre telas.
-- Avaliação única por filme: nota de 0,5 a 10 em passos de 0,5, comentário opcional de até 500 caracteres, edição e exclusão.
 
 ## Integração TMDB
 
