@@ -83,6 +83,26 @@ Para alterar os endereços dos remotes sem recompilar, consulte [URLs dos remote
 
 Para validar a configuração sem exibir os valores do ambiente, execute `docker compose config --quiet`. Os testes de integração estão descritos em [Testes e CI](#testes-e-ci).
 
+### Executar serviços específicos
+
+Com o `.env` configurado, informe os nomes dos serviços ao final do comando. Para iniciar apenas BFF e Shell:
+
+```bash
+docker compose up --build --wait bff shell
+```
+
+Se o portal completo já estiver em execução, use `docker compose down` antes para encerrá-lo. Selecionar serviços no comando `up` mantém os demais containers que já estejam ativos.
+
+O Shell fica disponível em http://127.0.0.1:4100. As regiões dos remotes apresentam o estado de indisponibilidade enquanto as respectivas aplicações estiverem desligadas.
+
+Para executar um remote independentemente, substitua `bff shell` por `catalog`, `movie` ou `area`. O Compose inicia o BFF automaticamente como dependência. Por exemplo, para catálogo e BFF:
+
+```bash
+docker compose up --build --wait catalog
+```
+
+Abra http://127.0.0.1:4101. Para iniciar somente o BFF, utilize `docker compose up --build --wait bff`; sua porta permanece interna à rede dos containers, conforme descrito acima.
+
 Referências: [Docker Desktop no Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [build em etapas](https://docs.docker.com/build/building/multi-stage/) e [ordem de inicialização no Compose](https://docs.docker.com/compose/how-tos/startup-order/).
 
 ## Telas
