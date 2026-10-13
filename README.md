@@ -2,7 +2,7 @@
 
 Portal de filmes com React 19, TypeScript strict, Module Federation, Axios, styled-components e npm workspaces.
 
-[Execução com Docker](#docker) · [Telas](#telas) · [Resultados dos testes](#resultados-dos-testes)
+[Projeto em produção](https://nexo-filmes.vercel.app/filmes) · [Execução com Docker](#docker) · [Telas](#telas) · [Resultados dos testes](#resultados-dos-testes)
 
 ## Requisitos
 
