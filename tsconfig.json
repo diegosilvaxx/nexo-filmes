@@ -38,6 +38,7 @@
     "vitest.config.ts",
     "vitest.storybook.config.ts",
     "playwright.config.ts",
-    "playwright.docker.config.ts"
+    "playwright.docker.config.ts",
+    "playwright.vercel.config.ts"
   ]
 }

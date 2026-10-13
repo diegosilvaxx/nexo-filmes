@@ -1,0 +1,74 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "shell": {
+      "root": ".",
+      "framework": "vite",
+      "installCommand": "npm ci",
+      "buildCommand": "node scripts/build-vercel.mjs shell",
+      "outputDirectory": "dist/vercel/shell",
+      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+    },
+    "catalog": {
+      "root": ".",
+      "framework": "vite",
+      "installCommand": "npm ci",
+      "buildCommand": "node scripts/build-vercel.mjs catalog",
+      "outputDirectory": "dist/vercel/catalog",
+      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+    },
+    "movie": {
+      "root": ".",
+      "framework": "vite",
+      "installCommand": "npm ci",
+      "buildCommand": "node scripts/build-vercel.mjs movie",
+      "outputDirectory": "dist/vercel/movie",
+      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+    },
+    "area": {
+      "root": ".",
+      "framework": "vite",
+      "installCommand": "npm ci",
+      "buildCommand": "node scripts/build-vercel.mjs area",
+      "outputDirectory": "dist/vercel/area",
+      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+    },
+    "bff": {
+      "root": ".",
+      "framework": "node",
+      "entrypoint": "apps/bff/src/vercel.ts",
+      "installCommand": "npm ci",
+      "buildCommand": "npm run typecheck",
+      "outputDirectory": "."
+    }
+  },
+  "headers": [
+    {
+      "source": "/runtime-config.json",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/remotes/:name/remoteEntry.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "bff" } },
+    { "source": "/remotes/catalog", "destination": { "service": "catalog", "path": "/" } },
+    { "source": "/remotes/movie", "destination": { "service": "movie", "path": "/" } },
+    { "source": "/remotes/area", "destination": { "service": "area", "path": "/" } },
+    {
+      "source": "/remotes/catalog/:path*",
+      "destination": { "service": "catalog", "path": "/:path*" }
+    },
+    {
+      "source": "/remotes/movie/:path*",
+      "destination": { "service": "movie", "path": "/:path*" }
+    },
+    {
+      "source": "/remotes/area/:path*",
+      "destination": { "service": "area", "path": "/:path*" }
+    },
+    { "source": "/(.*)", "destination": { "service": "shell" } }
+  ]
+}

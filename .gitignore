@@ -18,6 +18,8 @@ playwright-report/
 test-results/
 playwright-report-docker/
 test-results-docker/
+playwright-report-vercel/
+test-results-vercel/
 
 # Arquivos temporários
 *.log
@@ -25,6 +27,7 @@ test-results-docker/
 .DS_Store
 Thumbs.db
 .idea/
+.vercel/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json

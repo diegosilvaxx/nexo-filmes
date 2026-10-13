@@ -9,7 +9,7 @@ if (!root) throw new Error('Elemento raiz da aplicação não encontrado.');
 createRoot(root).render(
   <StrictMode>
     <UIProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
         <Standalone />
       </BrowserRouter>
     </UIProvider>

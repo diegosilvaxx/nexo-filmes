@@ -13,6 +13,9 @@ export function createAppConfig(application: ApplicationName) {
   const root = resolve(repositoryRoot, 'apps', application);
   return defineConfig(({ mode }) => ({
     root,
+    base: mode === 'vercel' && application !== 'shell' ? `/remotes/${application}/` : '/',
+    define:
+      mode === 'vercel' ? { 'import.meta.env.VITE_PORTAL_URL': 'window.location.origin' } : {},
     envDir: repositoryRoot,
     plugins: [
       react(),
@@ -100,7 +103,7 @@ export function createAppConfig(application: ApplicationName) {
     },
     build: {
       target: 'es2022',
-      outDir: resolve(repositoryRoot, 'dist', application),
+      outDir: resolve(repositoryRoot, mode === 'vercel' ? 'dist/vercel' : 'dist', application),
       emptyOutDir: true,
     },
   }));

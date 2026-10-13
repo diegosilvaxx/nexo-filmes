@@ -105,6 +105,28 @@ Abra http://127.0.0.1:4101. Para iniciar somente o BFF, utilize `docker compose 
 
 Referências: [Docker Desktop no Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [build em etapas](https://docs.docker.com/build/building/multi-stage/) e [ordem de inicialização no Compose](https://docs.docker.com/compose/how-tos/startup-order/).
 
+## Vercel
+
+O arquivo `vercel.json` declara os cinco serviços em um único projeto com o preset **Services**. O Shell atende a raiz do domínio, os remotes usam `/remotes/catalog/`, `/remotes/movie/` e `/remotes/area/`, e o BFF atende `/api/`.
+
+1. Importe o repositório na Vercel ou abra as configurações do projeto existente.
+2. Em **Build and Deployment**, selecione **Framework Preset: Services**, mantenha **Root Directory** na raiz do repositório e selecione **Node.js 24.x**.
+3. Desative os overrides gerais de instalação, build e saída. Cada serviço possui esses comandos no `vercel.json`.
+4. Em **Environment Variables**, configure `TMDB_READ_ACCESS_TOKEN` para os ambientes em que for publicar, como Production e Preview.
+5. Publique o commit com essa configuração e faça um novo deploy. Após a conclusão, abra a URL do projeto e confira `/api/health`.
+
+Os builds usam o modo `vercel` para gerar os caminhos dos assets e a configuração dos remotes no mesmo domínio. Os links dos remotes independentes retornam à origem acessada, inclusive em previews e domínios personalizados. As URLs locais `NEXO_*_REMOTE_URL` não precisam ser cadastradas nesse deploy. O BFF exporta um servidor HTTP para o runtime Node da Vercel; o token permanece no servidor.
+
+Para validar os builds e a navegação em um domínio local, após instalar o Chromium:
+
+```bash
+npm run test:vercel
+```
+
+Essa suíte verifica os arquivos dos remotes, a saúde do BFF, navegação e recarga no portal, persistência e acesso independente às três aplicações. Ela usa dados simulados e não precisa de credenciais da TMDB. Os relatórios ficam em `playwright-report-vercel/` e `test-results-vercel/`. A verificação local complementa o teste do deploy na Vercel.
+
+Referências: [Services](https://vercel.com/kb/guide/vercel-services), [configuração de serviços](https://vercel.com/docs/services/config-reference) e [roteamento](https://vercel.com/docs/services/routing).
+
 ## Telas
 
 Capturas do portal em execução com Docker e dados reais da TMDB. Favoritos e avaliações exibidos são exemplos locais.
@@ -204,24 +226,25 @@ Cada região remota possui estado de carregamento, limite de espera de dez segun
 
 ## Comandos
 
-| Comando                   | Descrição                                            |
-| ------------------------- | ---------------------------------------------------- |
-| `npm run check`           | Arquitetura, tipos, lint, formato, testes e builds   |
-| `npm run architecture`    | Verificação das importações entre aplicações         |
-| `npm run typecheck`       | Verificação de tipos sem emitir arquivos             |
-| `npm run lint`            | ESLint sem avisos                                    |
-| `npm run format`          | Formatação com Prettier                              |
-| `npm run build`           | Builds do BFF e das quatro aplicações em `dist/`     |
-| `npm run preview`         | Prévia dos builds e BFF com ambiente de produção     |
-| `npm run start:bff`       | Executa o build do BFF                               |
-| `npm test`                | Testes com Vitest                                    |
-| `npm run test:coverage`   | Relatório de cobertura V8                            |
-| `npm run test:e2e`        | Testes de navegador com Playwright                   |
-| `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador        |
-| `npm run test:docker`     | Integração no portal iniciado pelo Docker Compose    |
-| `npm run storybook`       | Catálogo interativo de componentes na porta 6006     |
-| `npm run build:storybook` | Build estático da documentação de componentes        |
-| `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium |
+| Comando                   | Descrição                                             |
+| ------------------------- | ----------------------------------------------------- |
+| `npm run check`           | Arquitetura, tipos, lint, formato, testes e builds    |
+| `npm run architecture`    | Verificação das importações entre aplicações          |
+| `npm run typecheck`       | Verificação de tipos sem emitir arquivos              |
+| `npm run lint`            | ESLint sem avisos                                     |
+| `npm run format`          | Formatação com Prettier                               |
+| `npm run build`           | Builds do BFF e das quatro aplicações em `dist/`      |
+| `npm run preview`         | Prévia dos builds e BFF com ambiente de produção      |
+| `npm run start:bff`       | Executa o build do BFF                                |
+| `npm test`                | Testes com Vitest                                     |
+| `npm run test:coverage`   | Relatório de cobertura V8                             |
+| `npm run test:e2e`        | Testes de navegador com Playwright                    |
+| `npm run test:e2e:report` | Abre o relatório HTML dos testes de navegador         |
+| `npm run test:docker`     | Integração no portal iniciado pelo Docker Compose     |
+| `npm run test:vercel`     | Builds e integração local em um domínio para Services |
+| `npm run storybook`       | Catálogo interativo de componentes na porta 6006      |
+| `npm run build:storybook` | Build estático da documentação de componentes         |
+| `npm run test:storybook`  | Interações e acessibilidade dos exemplos no Chromium  |
 
 ## Cache no cliente
 
@@ -326,7 +349,7 @@ O relatório fica em `playwright-report-docker/` e os diagnósticos em `test-res
 
 ### CI
 
-O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Utiliza a versão de `.nvmrc` e `npm ci` para verificar arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os testes de componentes e E2E. Os relatórios e o build do Storybook ficam disponíveis como artefatos por sete dias.
+O workflow `.github/workflows/ci.yml` executa em pushes, pull requests e acionamento manual. Utiliza a versão de `.nvmrc` e `npm ci` para verificar arquitetura, tipos, lint, formatação, cobertura e builds; após essa aprovação, executa os testes de componentes, E2E e integração local dos builds para Vercel Services. Os relatórios e o build do Storybook ficam disponíveis como artefatos por sete dias.
 
 Um job adicional gera as imagens Docker, inicia os cinco containers, verifica a alteração das URLs em runtime sem recompilar e executa a suíte de integração. Os containers são encerrados ao final, inclusive em falhas. O CI usa uma credencial fictícia para iniciar o BFF e não precisa de secrets da TMDB.
 
