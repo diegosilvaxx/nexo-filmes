@@ -4,7 +4,7 @@
     "shell": {
       "root": ".",
       "framework": "vite",
-      "installCommand": "npm ci",
+      "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs shell",
       "outputDirectory": "dist/vercel/shell",
       "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
@@ -12,7 +12,7 @@
     "catalog": {
       "root": ".",
       "framework": "vite",
-      "installCommand": "npm ci",
+      "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs catalog",
       "outputDirectory": "dist/vercel/catalog",
       "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
@@ -20,7 +20,7 @@
     "movie": {
       "root": ".",
       "framework": "vite",
-      "installCommand": "npm ci",
+      "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs movie",
       "outputDirectory": "dist/vercel/movie",
       "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
@@ -28,7 +28,7 @@
     "area": {
       "root": ".",
       "framework": "vite",
-      "installCommand": "npm ci",
+      "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs area",
       "outputDirectory": "dist/vercel/area",
       "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
@@ -37,7 +37,7 @@
       "root": ".",
       "framework": "node",
       "entrypoint": "apps/bff/src/vercel.ts",
-      "installCommand": "npm ci",
+      "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "npm run typecheck",
       "outputDirectory": "."
     }

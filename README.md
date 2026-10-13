@@ -115,6 +115,8 @@ O arquivo `vercel.json` declara os cinco serviços em um único projeto com o pr
 4. Em **Environment Variables**, configure `TMDB_READ_ACCESS_TOKEN` para os ambientes em que for publicar, como Production e Preview.
 5. Publique o commit com essa configuração e faça um novo deploy. Após a conclusão, abra a URL do projeto e confira `/api/health`.
 
+A instalação de cada serviço inclui as dependências de desenvolvimento e a raiz do monorepo, necessárias para executar TypeScript e Vite durante o build, inclusive quando `NODE_ENV=production`.
+
 Os builds usam o modo `vercel` para gerar os caminhos dos assets e a configuração dos remotes no mesmo domínio. Os links dos remotes independentes retornam à origem acessada, inclusive em previews e domínios personalizados. As URLs locais `NEXO_*_REMOTE_URL` não precisam ser cadastradas nesse deploy. O BFF exporta um servidor HTTP para o runtime Node da Vercel; o token permanece no servidor.
 
 Para validar os builds e a navegação em um domínio local, após instalar o Chromium:
