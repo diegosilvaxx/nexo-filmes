@@ -103,7 +103,10 @@ export function createAppConfig(application: ApplicationName) {
     },
     build: {
       target: 'es2022',
-      outDir: resolve(repositoryRoot, mode === 'vercel' ? 'dist/vercel' : 'dist', application),
+      outDir:
+        mode === 'vercel' && application !== 'shell'
+          ? resolve(repositoryRoot, 'dist/vercel', application, 'remotes', application)
+          : resolve(repositoryRoot, mode === 'vercel' ? 'dist/vercel' : 'dist', application),
       emptyOutDir: true,
     },
   }));

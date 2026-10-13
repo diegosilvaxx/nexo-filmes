@@ -6,6 +6,15 @@ import { fileURLToPath } from 'node:url';
 
 export default async function globalSetup() {
   const root = fileURLToPath(new URL('../..', import.meta.url));
+  const config = JSON.parse(await readFile(resolve(root, 'vercel.json'), 'utf8')) as {
+    services: Record<
+      string,
+      {
+        outputDirectory: string;
+        routes?: { dest?: string }[];
+      }
+    >;
+  };
   for (const application of ['shell', 'catalog', 'movie', 'area']) {
     execFileSync(process.execPath, ['scripts/build-vercel.mjs', application], {
       cwd: root,
@@ -29,8 +38,9 @@ export default async function globalSetup() {
       return;
     }
     const remote = path.match(/^\/remotes\/(catalog|movie|area)(?:\/(.*))?$/);
-    const directory = resolve(root, 'dist/vercel', remote?.[1] ?? 'shell');
-    const file = resolve(directory, `.${remote ? `/${remote[2] ?? ''}` : path}`);
+    const service = config.services[remote?.[1] ?? 'shell']!;
+    const directory = resolve(root, service.outputDirectory);
+    const file = resolve(directory, `.${path}`);
     if (!file.startsWith(`${directory}${sep}`) && file !== directory) {
       response.writeHead(400).end();
       return;
@@ -41,11 +51,12 @@ export default async function globalSetup() {
       try {
         body = await readFile(file);
       } catch {
-        if (extension) {
+        const fallback = service.routes?.find((route) => route.dest)?.dest;
+        if (!fallback) {
           response.writeHead(404).end();
           return;
         }
-        body = await readFile(resolve(directory, 'index.html'));
+        body = await readFile(resolve(directory, `.${fallback}`));
         extension = '.html';
       }
       response.setHeader('Content-Type', types[extension] ?? 'application/octet-stream');

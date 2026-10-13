@@ -11,6 +11,11 @@ test('builds Vercel integram remotes, API, navegação e recarga no mesmo domín
     const entry = await request.get(`/remotes/${remote}/remoteEntry.js`);
     expect(entry.ok()).toBe(true);
     expect(entry.headers()['content-type']).toContain('javascript');
+    expect(await entry.text()).not.toContain('<!doctype html>');
+    const manifest = await request.get(`/remotes/${remote}/mf-manifest.json`);
+    expect(manifest.ok()).toBe(true);
+    expect(manifest.headers()['content-type']).toContain('application/json');
+    expect(await manifest.json()).toMatchObject({ name: remote });
   }
   await page.goto('/filmes');
   await expect(page.getByRole('article')).toHaveCount(20);

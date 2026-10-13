@@ -117,7 +117,7 @@ O arquivo `vercel.json` declara os cinco serviços em um único projeto com o pr
 
 A instalação de cada serviço inclui as dependências de desenvolvimento e a raiz do monorepo, necessárias para executar TypeScript e Vite durante o build, inclusive quando `NODE_ENV=production`.
 
-Os builds usam o modo `vercel` para gerar os caminhos dos assets e a configuração dos remotes no mesmo domínio. Os links dos remotes independentes retornam à origem acessada, inclusive em previews e domínios personalizados. As URLs locais `NEXO_*_REMOTE_URL` não precisam ser cadastradas nesse deploy. O BFF exporta um servidor HTTP para o runtime Node da Vercel; o token permanece no servidor.
+Os builds usam o modo `vercel` para gerar os assets nos mesmos caminhos publicados, incluindo o prefixo `/remotes/<nome>/`. Cada serviço procura o arquivo antes de aplicar o fallback de navegação para seu `index.html`; os arquivos JavaScript e JSON dos remotes são servidos com seus tipos corretos. Os links dos remotes independentes retornam à origem acessada, inclusive em previews e domínios personalizados. As URLs locais `NEXO_*_REMOTE_URL` não precisam ser cadastradas nesse deploy. O BFF exporta um servidor HTTP para o runtime Node da Vercel; o token permanece no servidor.
 
 Para validar os builds e a navegação em um domínio local, após instalar o Chromium:
 

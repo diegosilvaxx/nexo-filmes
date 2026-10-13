@@ -7,7 +7,7 @@
       "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs shell",
       "outputDirectory": "dist/vercel/shell",
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+      "routes": [{ "handle": "filesystem" }, { "src": "/(.*)", "dest": "/index.html" }]
     },
     "catalog": {
       "root": ".",
@@ -15,7 +15,10 @@
       "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs catalog",
       "outputDirectory": "dist/vercel/catalog",
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+      "routes": [
+        { "handle": "filesystem" },
+        { "src": "/(.*)", "dest": "/remotes/catalog/index.html" }
+      ]
     },
     "movie": {
       "root": ".",
@@ -23,7 +26,10 @@
       "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs movie",
       "outputDirectory": "dist/vercel/movie",
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+      "routes": [
+        { "handle": "filesystem" },
+        { "src": "/(.*)", "dest": "/remotes/movie/index.html" }
+      ]
     },
     "area": {
       "root": ".",
@@ -31,7 +37,7 @@
       "installCommand": "npm ci --include=dev --workspaces --include-workspace-root",
       "buildCommand": "node scripts/build-vercel.mjs area",
       "outputDirectory": "dist/vercel/area",
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+      "routes": [{ "handle": "filesystem" }, { "src": "/(.*)", "dest": "/remotes/area/index.html" }]
     },
     "bff": {
       "root": ".",
@@ -54,20 +60,20 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": { "service": "bff" } },
-    { "source": "/remotes/catalog", "destination": { "service": "catalog", "path": "/" } },
-    { "source": "/remotes/movie", "destination": { "service": "movie", "path": "/" } },
-    { "source": "/remotes/area", "destination": { "service": "area", "path": "/" } },
+    { "source": "/remotes/catalog", "destination": { "service": "catalog" } },
+    { "source": "/remotes/movie", "destination": { "service": "movie" } },
+    { "source": "/remotes/area", "destination": { "service": "area" } },
     {
       "source": "/remotes/catalog/:path*",
-      "destination": { "service": "catalog", "path": "/:path*" }
+      "destination": { "service": "catalog" }
     },
     {
       "source": "/remotes/movie/:path*",
-      "destination": { "service": "movie", "path": "/:path*" }
+      "destination": { "service": "movie" }
     },
     {
       "source": "/remotes/area/:path*",
-      "destination": { "service": "area", "path": "/:path*" }
+      "destination": { "service": "area" }
     },
     { "source": "/(.*)", "destination": { "service": "shell" } }
   ]
